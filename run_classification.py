@@ -137,6 +137,25 @@ def preprocess_seg_df_for_pipeline(
 
 # ------------------------ SHAP utilities -------------------------
 
+def _coerce_expected_value(ev, pos_idx: int) -> float:
+    """
+    SHAP expected_value can be:
+      - scalar (float)
+      - list/array of length 1 (compact binary)
+      - list/array of length 2 (binary, per class)
+      - list/array of length K (multiclass)
+    Pick pos_idx if available; otherwise fall back to 0.
+    """
+    if isinstance(ev, (list, tuple, np.ndarray)):
+        arr = np.asarray(ev).squeeze()
+        if arr.ndim == 0:
+            return float(arr)
+        # choose pos_idx if in range, else 0
+        k = pos_idx if arr.shape[0] > pos_idx else 0
+        return float(arr[k])
+    # scalar
+    return float(ev)
+
 def _transform_to_model_input_and_names(pipeline, X_new: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     """
     Run X_new through all pipeline steps EXCEPT the final estimator.
@@ -213,26 +232,40 @@ def _transform_to_model_input_and_names(pipeline, X_new: pd.DataFrame) -> Tuple[
 
 def _aggregate_to_original(feat_names: np.ndarray, shap_row: np.ndarray) -> pd.DataFrame:
     """
-    Collapse transformed features back to base columns (heuristic for ColumnTransformer names).
-    Handles names like 'num__age', 'cat__sex_F'. Adjust if your naming differs.
+    Collapse transformed features back to base columns.
+    Robust to underscores in base feature names.
+    Strategy:
+      - Parse '{prefix}__{rhs}'.
+      - If prefix looks like one-hot (contains 'onehot' or 'ohe'), strip only the LAST '_category'.
+      - Else keep full rhs intact.
     """
     base = []
-    for s in map(str, feat_names):
-        if "__" in s:
-            rhs = s.split("__", 1)[1]
-            base.append(rhs.split("_", 1)[0])  # e.g., 'sex_F' -> 'sex'
+    for full in map(str, feat_names):
+        if "__" in full:
+            prefix, rhs = full.split("__", 1)
+            pfx = prefix.lower()
+            if ("onehot" in pfx) or ("ohe" in pfx):
+                # one-hot: remove only the *last* underscore suffix (category)
+                if "_" in rhs:
+                    rhs = rhs.rsplit("_", 1)[0]
+                # if no underscore, leave as-is (rare)
+            # non one-hot: numeric/ordinal passthrough → keep rhs intact
+            base.append(rhs)
         else:
-            base.append(s)
-    base = np.array(base)
+            # No transformer prefix present; keep whole name
+            base.append(full)
+
+    base = np.array(base, dtype=object)
     df = pd.DataFrame(shap_row.reshape(1, -1), columns=feat_names)
     agg = (
         df.T
         .assign(__base__=base)
-        .groupby("__base__")
+        .groupby("__base__", sort=False)
         .sum()
         .T
     )
     return agg
+
 
 # ----------------------------- HELPER ----------------------------
 
@@ -359,6 +392,33 @@ def main():
         shap_original.index = [0]
     shap_original.to_csv(out_dir / "shap_original.csv", index=False)
 
+    try:
+        exp = shap.TreeExplainer(est).expected_value
+        # normalize to a float using the same helper as above
+        shap_exp = _coerce_expected_value(exp, pos_idx)
+    except Exception:
+        shap_exp = None
+
+    # Build name -> index mapping from the CSV
+    region_map = (seg_df[['name', 'index']]
+              .drop_duplicates('name')
+              .set_index('name')['index']
+              .to_dict())
+
+    base_vals_aligned = X_wide.reindex(columns=shap_original.columns)
+
+    shap_long = pd.DataFrame({
+        "region_name": shap_original.columns,
+        "region_index": [region_map.get(c, np.nan) for c in shap_original.columns],
+        "shap_value": shap_original.iloc[0].values,
+        "feature_value": base_vals_aligned.iloc[0].values
+    })
+    shap_long.to_csv(out_dir / "shap_original_long.csv", index=False)
+
+    unmatched_cols = [c for c in shap_original.columns if c not in region_map]
+    if unmatched_cols:
+        print(f"[WARN] The following original feature columns could not be mapped to region indices:")
+        print(unmatched_cols)
 
     # 6) Build merged row (base columns + _shap + proba)
     # shap_original has one row; rename its columns to *_shap
@@ -391,6 +451,7 @@ def main():
         "predicted_label": label,
         "threshold_used": THRESHOLD,
         "threshold_target": args.thrs_target,
+        "shap_expected_value": shap_exp,
         "n_transformed_features": int(shap_transformed.shape[1]),
         "n_original_features": int(shap_original.shape[1]),
         "n_missing_expected_raw_cols": int(len(missing_cols)),
