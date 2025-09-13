@@ -11,6 +11,7 @@
 .saturn
 .ssh
 .vscode-server
+.gitconfig
 cmake
 data
 output_pred
