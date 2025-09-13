@@ -13,6 +13,9 @@
 .vscode-server
 cmake
 data
+output_pred
+!data/seg_example.csv
+project
 LightGBM
 log/
 lost+found
