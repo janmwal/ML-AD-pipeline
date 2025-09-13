@@ -29,3 +29,4 @@ artifacts
 
 jupyterlab-workspace.json
 logs.log
+*.ipynb
