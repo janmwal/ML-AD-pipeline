@@ -29,4 +29,4 @@ artifacts
 
 jupyterlab-workspace.json
 logs.log
-*.ipynb
+*.ipynboptuna_studies.db
