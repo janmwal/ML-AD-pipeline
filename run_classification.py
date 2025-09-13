@@ -250,9 +250,10 @@ def main():
         help="Path to subject per-region CSV")
     parser.add_argument(
         "--output_folder", 
-        required=True, 
+        required=False, 
         type=str, 
-        help="Directory to write outputs")
+        default="output_pred",
+        help="Directory to write outputs (created as output_pred if missing)")
     parser.add_argument(
         "--model", 
         required=True, 
@@ -380,10 +381,10 @@ def main():
 
     # 7) Write a small JSON summary
     summary = {
-        "input_csv": str(input_csv),
+        "input_csv": str(input_csv.resolve()),
         "output_folder": str(out_dir.resolve()),
         "model": args.model,
-        "thresholded": bool(args.GM_thrs),
+        "gm_thresholded": bool(args.GM_thrs),
         "model_path": str(model_path),
         "positive_class_index_used": int(pos_idx),
         "proba": proba,
