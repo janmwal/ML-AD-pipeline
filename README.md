@@ -7,14 +7,14 @@ Minimal, functional docs for the **current** scripts.
 ## 1) Setup (venv + requirements)
 
 ```bash
-python -m venv .venv
+python3.12 -m venv .venv
 # macOS/Linux
 source .venv/bin/activate
-# Windows PowerShell
-# .venv\Scripts\Activate.ps1
+python -V # should print 3.12.x
 
-pip install --upgrade pip
+python -m pip install -U pip setuptools wheel
 pip install -r requirements.txt
+pip check
 ```
 
 > Make sure you run the scripts from an activated virtual environment.

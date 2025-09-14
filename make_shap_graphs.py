@@ -1,7 +1,5 @@
 import argparse
 from nilearn import image, plotting, datasets
-from matplotlib.colors import Normalize
-import matplotlib.gridspec as gridspec
 import matplotlib.cm as cm
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,7 +7,6 @@ import numpy as np
 import json
 import shap
 from pathlib import Path
-import joblib
 
 
 def glass_brain_plot(df, value_col, idx_col, title=None, cmap='Reds', vmax=None, vmin=None, display_mode='lyrz'):

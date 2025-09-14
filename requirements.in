@@ -1,0 +1,9 @@
+backports.tarfile==1.2.0
+importlib-metadata==8.0.0
+jaraco.collections==5.1.0
+matplotlib==3.10.6
+nilearn==0.12.1
+pip-chill==1.0.3
+platformdirs==4.2.2
+shap==0.48.0
+tomli==2.0.1

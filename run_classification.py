@@ -119,9 +119,11 @@ def preprocess_seg_df_for_pipeline(
     X_wide.index = [0]
 
     expected_cols = _expected_raw_columns_from_pipeline(pipeline)
-    if expected_cols is None:
-        # Return the wide row as-is if we cannot discover expected raw columns
+    # Fallback: if we can't get a sensible raw feature list (or it's suspiciously tiny),
+    # just use the wide row as-is (ColumnTransformer will select by name).
+    if (expected_cols is None) or (len(expected_cols) < 10):
         return X_wide.copy(), [], [], X_wide
+
 
     # Align to expected raw columns
     X_aligned = pd.DataFrame(index=[0], columns=expected_cols, dtype=float)
@@ -158,63 +160,55 @@ def _coerce_expected_value(ev, pos_idx: int) -> float:
 
 def _transform_to_model_input_and_names(pipeline, X_new: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Run X_new through all pipeline steps EXCEPT the final estimator.
-    Return:
-      X_model  : ndarray the estimator actually sees
-      feat_out : np.ndarray of names AFTER all intermediate transforms
+    Simplified for our use-cases: run all steps except the final estimator.
+    Prefer DataFrame outputs for names; otherwise try 'preprocessor' names or
+    fall back to original columns. If lengths don't match, generate f{i} names.
     """
-    # start with raw
+    # Ask sklearn to emit DataFrames if supported
+    try:
+        pipeline.set_output(transform="pandas")
+    except Exception:
+        pass
+
+    # Ensure DataFrame input for consistent behavior
     if isinstance(X_new, pd.DataFrame):
         X_curr = X_new.copy()
-        feat_out = np.array(X_curr.columns, dtype=object)
+        base_names = list(X_curr.columns)
     else:
-        X_curr = X_new
-        feat_out = np.array([f"col_{i}" for i in range(X_curr.shape[1])], dtype=object)
+        X_curr = pd.DataFrame(X_new)
+        base_names = [f"col_{i}" for i in range(X_curr.shape[1])]
 
+    # Apply all but the last step
     for name, step in list(pipeline.steps)[:-1]:
-        # ---- transform ----
         if hasattr(step, "transform"):
             X_curr = step.transform(X_curr)
-        # normalize to ndarray for reliable shape checks
-        if hasattr(X_curr, "toarray"):
-            X_nd = X_curr.toarray()
-        elif isinstance(X_curr, pd.DataFrame):
-            X_nd = X_curr.values
-        else:
-            X_nd = np.asarray(X_curr)
 
-        # ---- update names ----
-        if hasattr(step, "get_feature_names_out"):
+    # If we have a DataFrame, use its columns
+    if isinstance(X_curr, pd.DataFrame):
+        feat_names = np.array(list(X_curr.columns), dtype=object)
+        return X_curr.to_numpy(), feat_names
+
+    # Otherwise try to pull names from a named 'preprocessor'
+    feat_names = None
+    preproc = getattr(pipeline, "named_steps", {}).get("preprocessor", None)
+    if preproc is not None:
+        if hasattr(preproc, "get_feature_names_out"):
             try:
-                feat_out = np.asarray(step.get_feature_names_out(feat_out), dtype=object)
-            except TypeError:
-                feat_out = np.asarray(step.get_feature_names_out(), dtype=object)
+                feat_names = np.asarray(preproc.get_feature_names_out(), dtype=object)
+            except Exception:
+                feat_names = None
+        elif hasattr(preproc, "get_feature_names"):
+            try:
+                feat_names = np.asarray(preproc.get_feature_names(), dtype=object)
+            except Exception:
+                feat_names = None
 
-        elif hasattr(step, "get_support"):
-            # selectors (VarianceThreshold, SelectKBest, SelectFromModel)
-            sup = step.get_support(indices=False)
-            sup = np.asarray(sup, dtype=bool)
-            if sup.shape[0] == feat_out.shape[0]:
-                feat_out = feat_out[sup]
-            else:
-                # dimension changed without a clean mapping
-                feat_out = np.array([f"f{i}" for i in range(X_nd.shape[1])], dtype=object)
-
-        elif step.__class__.__name__.lower().startswith("pca"):
-            n_comp = getattr(step, "n_components_", None)
-            if n_comp is None:
-                n_comp = X_nd.shape[1]
-            feat_out = np.array([f"pca_{i}" for i in range(int(n_comp))], dtype=object)
-
-        else:
-            # if dimensionality changed and we can't infer new names → generic
-            if X_nd.shape[1] != feat_out.shape[0]:
-                feat_out = np.array([f"f{i}" for i in range(X_nd.shape[1])], dtype=object)
-
-        # carry ndarray forward
-        X_curr = X_nd
-
-    return X_curr, np.asarray(feat_out, dtype=object)
+    X_model = np.asarray(X_curr)
+    if feat_names is None:
+        feat_names = np.array(base_names, dtype=object)
+    if len(feat_names) != X_model.shape[1]:
+        feat_names = np.array([f"f{i}" for i in range(X_model.shape[1])], dtype=object)
+    return X_model, feat_names
 
 
 """def _is_tree_estimator(est) -> bool:
@@ -326,6 +320,12 @@ def main():
     pipeline, model_path = load_pipeline(model=args.model, thresholded=args.GM_thrs)
     est = pipeline[-1]
 
+    # Ensure intermediate transforms yield pandas DataFrames (preserves column names)
+    try:
+        pipeline.set_output(transform="pandas")
+    except Exception:
+        pass
+
     # 2) Read & preprocess CSV -> X_new (single row aligned to training raw features)
     seg_df = pd.read_csv(input_csv, sep=None, engine="python")
 
@@ -351,56 +351,72 @@ def main():
 
     label = config.CLASS_LABELS[int(proba >= THRESHOLD)]
 
+
+    # 4) SHAP — simple, new-API style
     X_tr, feat_names = _transform_to_model_input_and_names(pipeline, X_new)
-    print(f"[DEBUG] Model input shape: {X_tr.shape} | feature names: {len(feat_names)}")
+    X_df = pd.DataFrame(X_tr, columns=feat_names)
 
-    # 4) SHAP on transformed features
-    # ---- SHAP on transformed features ----
-    X_tr, feat_names = _transform_to_model_input_and_names(pipeline, X_new)
+    # Positive-class index
+    pos_idx = 1
+    if hasattr(est, "classes_"):
+        _cls = list(est.classes_)
+        if len(_cls) == 2:
+            pos_idx = _cls.index(1) if 1 in _cls else 1
 
-    explainer = shap.TreeExplainer(est)
-    sv = explainer.shap_values(X_tr)
+    # Explainer in raw/logit space; required for sklearn ExtraTrees with tree_path_dependent
+    explainer = shap.TreeExplainer(
+        est,
+        feature_perturbation="tree_path_dependent",
+        model_output="raw"
+    )
+    exp = explainer(X_df)
 
-    def _select_class_shap(sv, pos_idx):
-        if isinstance(sv, list):
-            return np.asarray(sv[0] if len(sv) == 1 else sv[pos_idx])
-        if isinstance(sv, np.ndarray):
-            if sv.ndim == 3:
-                k = 0 if sv.shape[0] == 1 else pos_idx
-                return sv[k, :, :]
-            if sv.ndim == 2:
-                return sv
-        raise TypeError(f"Unexpected SHAP return type/shape: type={type(sv)}, shape={getattr(sv,'shape',None)}")
+    def _extract_vals_and_base(exp, pos_idx: int, n_features: int) -> tuple[np.ndarray, float]:
+        v = np.asarray(exp.values)
+        b = np.asarray(exp.base_values)
+        if v.ndim == 3:
+            # Either (n, n_outputs, n_features) or (n, n_features, n_outputs)
+            if v.shape[2] == n_features:
+                vals = v[:, pos_idx, :]                # -> (n, n_features)
+            elif v.shape[1] == n_features:
+                vals = v[:, :, pos_idx]                # -> (n, n_features)
+            else:
+                raise ValueError(f"Can't infer features axis from {v.shape} vs n_features={n_features}")
+            base = b[:, pos_idx] if b.ndim == 2 else b
+        elif v.ndim == 2:
+            vals = v                                   # already (n, n_features)
+            base = b[:, pos_idx] if b.ndim == 2 else b
+        else:
+            raise ValueError(f"Unexpected Explanation.values ndim={v.ndim}")
+        return np.asarray(vals), float(np.ravel(base)[0])
 
-    sv_class = _select_class_shap(sv, pos_idx)
-    shap_row = sv_class[:1, :]
+    vals_logit, base_logit = _extract_vals_and_base(exp, pos_idx, n_features=len(feat_names))
 
+    # Ensure a single-row matrix
+    if vals_logit.ndim == 1:
+        vals_logit = vals_logit.reshape(1, -1)
+    elif vals_logit.shape[0] != 1:
+        vals_logit = vals_logit[:1, :]
 
-    # sanity check
-    # final guard: ensure names match SHAP width
-    if shap_row.shape[1] != len(feat_names):
-        print(f"[WARN] Name/shape mismatch: SHAP has {shap_row.shape[1]} cols, names={len(feat_names)}. "
-            "Using generic names derived from SHAP matrix.")
-        feat_names = np.array([f"f{i}" for i in range(shap_row.shape[1])], dtype=object)
-
-    shap_transformed = pd.DataFrame(shap_row, columns=feat_names, index=[0])
+    # 1) Transformed-space SHAP (log-odds units)
+    shap_transformed = pd.DataFrame(vals_logit, columns=feat_names, index=[0])
     shap_transformed.to_csv(out_dir / "shap_transformed.csv", index=False)
 
-    # Skip aggregation if names are PCA/generic
-    if any(str(c).startswith(("pca_", "f")) for c in feat_names):
-        shap_original = shap_transformed.copy()
-        shap_original.index = [0]
-    else:
-        shap_original = _aggregate_to_original(feat_names, shap_row)
-        shap_original.index = [0]
+    # 2) Aggregate back to original columns (still log-odds units)
+    shap_original = _aggregate_to_original(feat_names, shap_transformed.iloc[0].to_numpy())
+    shap_original.index = [0]
     shap_original.to_csv(out_dir / "shap_original.csv", index=False)
 
-    try:
-        exp = shap.TreeExplainer(est).expected_value
-        # normalize to a float using the same helper as above
-        shap_exp = _coerce_expected_value(exp, pos_idx)
-    except Exception:
-        shap_exp = None
+    # (Optional) sanity check: SHAP additivity in logit space
+    def _sigmoid(x: float) -> float: return 1.0 / (1.0 + np.exp(-x))
+    delta_logit = float(shap_transformed.iloc[0].sum())
+    pred_logit_from_shap = base_logit + delta_logit
+    pred_proba_from_shap = _sigmoid(pred_logit_from_shap)
+    base_proba = _sigmoid(base_logit)
+    recon_error = abs(pred_proba_from_shap - proba)  # 'proba' from predict_proba earlier
+    shap_space = "raw_logit"
+
+
 
     # Build name -> index mapping from the CSV
     region_map = (seg_df[['name', 'index']]
@@ -443,6 +459,7 @@ def main():
 
 
     # 7) Write a small JSON summary
+
     summary = {
         "input_csv": str(input_csv.resolve()),
         "output_folder": str(out_dir.resolve()),
@@ -454,14 +471,18 @@ def main():
         "predicted_label": label,
         "threshold_used": THRESHOLD,
         "threshold_target": args.thrs_target,
-        "shap_expected_value": shap_exp,
+        "shap_space": shap_space,
+        "shap_expected_value_logit": float(base_logit),
+        "shap_expected_value_proba": float(base_proba),
+        "shap_sum_logit": float(delta_logit),
+        "pred_proba_from_shap": float(pred_proba_from_shap),
+        "pred_proba_pipeline": float(proba),
+        "prob_reconstruction_error": float(recon_error),
         "n_transformed_features": int(shap_transformed.shape[1]),
         "n_original_features": int(shap_original.shape[1]),
         "n_missing_expected_raw_cols": int(len(missing_cols)),
-        "n_extra_csv_cols_ignored": int(len(extra_cols)),
-        "missing_expected_raw_cols_sample": missing_cols[:10],
-        "extra_csv_cols_ignored_sample": extra_cols[:10],
-    }
+        "n_extra_csv_cols_ignored": int(len(extra_cols)),    
+        }
     with open(out_dir / "prediction.json", "w") as f:
         json.dump(summary, f, indent=2)
 

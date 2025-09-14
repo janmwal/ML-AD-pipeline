@@ -22,6 +22,7 @@ log/
 lost+found
 setup-logs
 venv
+.venv
 workspace
 artifacts
 .bash_history
