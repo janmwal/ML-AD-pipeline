@@ -31,3 +31,8 @@ artifacts
 jupyterlab-workspace.json
 logs.log
 *.ipynboptuna_studies.db
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+
