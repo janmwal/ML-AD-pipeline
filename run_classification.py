@@ -321,10 +321,10 @@ def main():
     est = pipeline[-1]
 
     # Ensure intermediate transforms yield pandas DataFrames (preserves column names)
-    try:
+    """try:
         pipeline.set_output(transform="pandas")
     except Exception:
-        pass
+        pass"""
 
     # 2) Read & preprocess CSV -> X_new (single row aligned to training raw features)
     seg_df = pd.read_csv(input_csv, sep=None, engine="python")
@@ -351,8 +351,7 @@ def main():
 
     label = config.CLASS_LABELS[int(proba >= THRESHOLD)]
 
-
-    # 4) SHAP — simple, new-API style
+    # --- SHAP: always return LOG-ODDS (logit) φᵢ; robust for LGBM & ExtraTrees ---
     X_tr, feat_names = _transform_to_model_input_and_names(pipeline, X_new)
     X_df = pd.DataFrame(X_tr, columns=feat_names)
 
@@ -363,59 +362,116 @@ def main():
         if len(_cls) == 2:
             pos_idx = _cls.index(1) if 1 in _cls else 1
 
-    # Explainer in raw/logit space; required for sklearn ExtraTrees with tree_path_dependent
-    explainer = shap.TreeExplainer(
-        est,
-        feature_perturbation="tree_path_dependent",
-        model_output="raw"
-    )
-    exp = explainer(X_df)
+    proba_row = np.asarray(pipeline.predict_proba(X_new))[0]
 
-    def _extract_vals_and_base(exp, pos_idx: int, n_features: int) -> tuple[np.ndarray, float]:
+    def _sigmoid(x: float) -> float:
+        return 1.0 / (1.0 + np.exp(-x))
+
+    def _is_prob_baseline(bv) -> bool:
+        bv = np.asarray(bv)
+        return (bv.ndim == 2) and (bv.shape[1] >= 2) and np.allclose(bv.sum(axis=1), 1.0, atol=1e-6)
+
+    def _extract_tree_raw(exp, pos_idx: int, n_features: int):
         v = np.asarray(exp.values)
         b = np.asarray(exp.base_values)
         if v.ndim == 3:
-            # Either (n, n_outputs, n_features) or (n, n_features, n_outputs)
-            if v.shape[2] == n_features:
-                vals = v[:, pos_idx, :]                # -> (n, n_features)
-            elif v.shape[1] == n_features:
-                vals = v[:, :, pos_idx]                # -> (n, n_features)
+            if v.shape[2] == n_features:        # (n, n_outputs, n_features)
+                vals = v[:, pos_idx, :]
+            elif v.shape[1] == n_features:      # (n, n_features, n_outputs)
+                vals = v[:, :, pos_idx]
             else:
-                raise ValueError(f"Can't infer features axis from {v.shape} vs n_features={n_features}")
+                raise ValueError(f"Can't infer feature axis from {v.shape} vs n_features={n_features}")
             base = b[:, pos_idx] if b.ndim == 2 else b
         elif v.ndim == 2:
-            vals = v                                   # already (n, n_features)
+            vals = v
             base = b[:, pos_idx] if b.ndim == 2 else b
         else:
             raise ValueError(f"Unexpected Explanation.values ndim={v.ndim}")
         return np.asarray(vals), float(np.ravel(base)[0])
 
-    vals_logit, base_logit = _extract_vals_and_base(exp, pos_idx, n_features=len(feat_names))
+    use_logit_fallback = False
+    shap_source = None
 
-    # Ensure a single-row matrix
+    # 1) Try TreeExplainer raw (true logits for boosted trees)
+    try:
+        tree_exp = shap.TreeExplainer(
+            est,
+            feature_perturbation="tree_path_dependent",
+            model_output="raw",
+        )(X_df)
+
+        if _is_prob_baseline(tree_exp.base_values):
+            # ExtraTrees/RandomForest quirk → baseline is per-class probabilities, not logits
+            use_logit_fallback = True
+        else:
+            vals_logit, base_logit = _extract_tree_raw(tree_exp, pos_idx, n_features=len(feat_names))
+            shap_source = "tree_raw"
+    except Exception:
+        use_logit_fallback = True
+
+    # 2) Fallback: model-agnostic with LOGIT link over predict_proba and a non-trivial background
+    if use_logit_fallback:
+        # (a) Try to load a saved background set colocated with the model (recommended to save at train-time)
+        #     Supported filenames: background_transformed.npy (shape: [m, n_features]) or background_transformed.csv
+        model_dir = Path(model_path).parent
+        bg_np = model_dir / f"background_transformed_{_suffix_from_bool(args.GM_thrs)}.npy"
+        bg_csv = model_dir / f"background_transformed_{_suffix_from_bool(args.GM_thrs)}.csv"
+
+        X_bg = None
+        if bg_np.exists():
+            arr = np.load(bg_np)
+            if arr.shape[1] == X_df.shape[1]:
+                X_bg = pd.DataFrame(arr, columns=X_df.columns)
+        elif bg_csv.exists():
+            tmp = pd.read_csv(bg_csv)
+            # Align/rename just in case
+            if set(X_df.columns).issubset(tmp.columns):
+                X_bg = tmp[X_df.columns].copy()
+
+        # (b) If no background on disk, synthesize a small local background by jittering the instance
+        if X_bg is None:
+            rng = np.random.default_rng(12345)
+            center = X_df.iloc[0].to_numpy(dtype=float, copy=True)
+            # per-feature scale: 1% of |x| with a small absolute floor to escape zeros
+            scale = 0.01 * np.maximum(np.abs(center), 1e-3)
+            m = 64  # number of background samples
+            jitter = rng.normal(loc=0.0, scale=scale, size=(m, center.size))
+            X_bg = pd.DataFrame(center + jitter, columns=X_df.columns)
+
+        # (c) Clipped predict_proba to avoid logit(0) / logit(1) during masking
+        def _f_clipped(Z):
+            P = est.predict_proba(pd.DataFrame(Z, columns=X_df.columns))[:, pos_idx]
+            return np.clip(P, 1e-6, 1 - 1e-6)
+
+        masker = shap.maskers.Independent(X_bg, max_samples=min(256, len(X_bg)))
+        logit_exp = shap.Explainer(_f_clipped, masker, link=shap.links.logit)(X_df)
+
+        vals_logit = np.atleast_2d(np.asarray(logit_exp.values))        # (1, n_features)
+        base_logit = float(np.ravel(logit_exp.base_values)[0])          # scalar
+        shap_source = "logit_link_model_agnostic"
+
+    # Normalize to a single row
     if vals_logit.ndim == 1:
         vals_logit = vals_logit.reshape(1, -1)
     elif vals_logit.shape[0] != 1:
         vals_logit = vals_logit[:1, :]
 
-    # 1) Transformed-space SHAP (log-odds units)
+    # 3) Transformed-space SHAP (LOG-ODDS)
     shap_transformed = pd.DataFrame(vals_logit, columns=feat_names, index=[0])
     shap_transformed.to_csv(out_dir / "shap_transformed.csv", index=False)
 
-    # 2) Aggregate back to original columns (still log-odds units)
+    # 4) Aggregate back to original columns (still LOG-ODDS)
     shap_original = _aggregate_to_original(feat_names, shap_transformed.iloc[0].to_numpy())
     shap_original.index = [0]
     shap_original.to_csv(out_dir / "shap_original.csv", index=False)
 
-    # (Optional) sanity check: SHAP additivity in logit space
-    def _sigmoid(x: float) -> float: return 1.0 / (1.0 + np.exp(-x))
+    # 5) Sanity: SHAP additivity in logit space
     delta_logit = float(shap_transformed.iloc[0].sum())
     pred_logit_from_shap = base_logit + delta_logit
     pred_proba_from_shap = _sigmoid(pred_logit_from_shap)
     base_proba = _sigmoid(base_logit)
-    recon_error = abs(pred_proba_from_shap - proba)  # 'proba' from predict_proba earlier
+    recon_error = abs(pred_proba_from_shap - float(proba_row[pos_idx]))
     shap_space = "raw_logit"
-
 
 
     # Build name -> index mapping from the CSV
@@ -472,11 +528,12 @@ def main():
         "threshold_used": THRESHOLD,
         "threshold_target": args.thrs_target,
         "shap_space": shap_space,
+        "shap_source": shap_source,  # "tree_raw" or "logit_link_model_agnostic"
         "shap_expected_value_logit": float(base_logit),
         "shap_expected_value_proba": float(base_proba),
         "shap_sum_logit": float(delta_logit),
         "pred_proba_from_shap": float(pred_proba_from_shap),
-        "pred_proba_pipeline": float(proba),
+        "pred_proba_pipeline": float(proba_row[pos_idx]),
         "prob_reconstruction_error": float(recon_error),
         "n_transformed_features": int(shap_transformed.shape[1]),
         "n_original_features": int(shap_original.shape[1]),
