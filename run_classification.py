@@ -289,17 +289,20 @@ def main():
         help="Directory to write outputs (created as output_pred if missing)")
     parser.add_argument(
         "--model", 
-        required=True, 
+        required=False, 
+        default="extratrees",
         choices=["lgbm", "extratrees"], 
         help="Model family to load")
     parser.add_argument(
         "--GM_thrs", 
-        required=True, 
+        required=False, 
+        default=False,
         type=str2bool, 
         help="Use thresholded GM values (True/False)")
     parser.add_argument(
         "--thrs_target",
-        required=True,
+        required=False,
+        default="youden",
         choices=["youden", "sensitivity", "f1"],
         help="Which precomputed classification threshold to use."
     )

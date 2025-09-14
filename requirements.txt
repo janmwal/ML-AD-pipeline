@@ -74,7 +74,6 @@ prompt_toolkit==3.0.51
 psutil==7.0.0
 ptyprocess==0.7.0
 pure_eval==0.2.3
-pycaret==3.3.2
 Pygments==2.19.2
 pyod==2.0.5
 pyparsing==3.2.3
