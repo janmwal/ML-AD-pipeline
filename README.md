@@ -156,7 +156,7 @@ python make_shap_graphs.py \
   --top_k 10
 ```
 ![Shap glass brain](figs/shap_glass_brain.png)
-![Shap waterfall](figs/shape_waterfall.png)
+![Shap waterfall](figs/shap_waterfall.png)
 
 ---
 
