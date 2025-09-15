@@ -37,3 +37,4 @@ logs.log
 __pycache__/
 *.py[cod]
 
+.git-credentials

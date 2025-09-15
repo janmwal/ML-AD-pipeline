@@ -155,6 +155,8 @@ python make_shap_graphs.py \
   --output_folder output_pred \
   --top_k 10
 ```
+![Shap glass brain](figs/shap_glass_brain.png)
+![Shap waterfall](figs/shape_waterfall.png)
 
 ---
 
