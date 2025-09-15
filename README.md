@@ -141,9 +141,7 @@ Saved to `--output_folder`:
 ```bash
 python run_classification.py \
   --input_csv data/seg_example.csv \
-  --model extratrees \
-  --GM_thrs False \
-  --thrs_target f1 \
+  --model lgbm \
   --output_folder output_pred
 ```
 
