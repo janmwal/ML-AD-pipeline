@@ -284,7 +284,7 @@ def main():
     parser.add_argument(
         "--model", 
         required=False, 
-        default="extratrees",
+        default="lgbm",
         choices=["lgbm", "extratrees"], 
         help="Model family to load")
     parser.add_argument(
