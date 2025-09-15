@@ -1,6 +1,9 @@
 backports.tarfile==1.2.0
 importlib-metadata==8.0.0
+inflect==7.3.1
+jaraco-functools==4.3.0
 jaraco.collections==5.1.0
+lightgbm==4.6.0
 matplotlib==3.10.6
 nilearn==0.12.1
 pip-chill==1.0.3
