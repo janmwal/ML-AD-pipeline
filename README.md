@@ -141,9 +141,7 @@ Saved to `--output_folder`:
 ```bash
 python run_classification.py \
   --input_csv data/seg_example.csv \
-  --model extratrees \
-  --GM_thrs False \
-  --thrs_target f1 \
+  --model lgbm \
   --output_folder output_pred
 ```
 
@@ -156,7 +154,7 @@ python make_shap_graphs.py \
   --top_k 10
 ```
 ![Shap glass brain](figs/shap_glass_brain.png)
-![Shap waterfall](figs/shape_waterfall.png)
+![Shap waterfall](figs/shap_waterfall.png)
 
 ---
 
