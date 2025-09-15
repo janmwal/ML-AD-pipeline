@@ -16,7 +16,7 @@ def glass_brain_plot(df, value_col, idx_col, title=None, cmap='Reds', vmax=None,
             'region_idx' : df[idx_col]
         })
     # Load the 3D labeled atlas NIfTI
-    label_img = image.load_img('data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT_ants.nii') # old : data/labels_neuromorphics_extra.nii (we don't know the patient) or data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT.nii (from ferath)
+    label_img = image.load_img('data/label_neuromorphometrics.nii') # old : data/labels_neuromorphics_extra.nii (we don't know the patient) or data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT.nii (from ferath)
     label_data = label_img.get_fdata()
 
     # Make an empty stat map
