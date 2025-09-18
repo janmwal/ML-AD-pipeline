@@ -1,0 +1,85 @@
+region,left_id,right_id,midline_id,lobe,ca_network,left_full_name,right_full_name,midline_full_name,acronym,lobe_color,region_color
+3rdVentricle,,,4.0,Ventricles and CSF,,,,x3rdVentricle_4,3rdVent,#17becf,#ffa0be
+4thVentricle,,,11.0,Ventricles and CSF,,,,x4thVentricle_11,4thVent,#17becf,#32db93
+ACgGAnteriorCingulateGyrus,101.0,100.0,,Frontal Lobe,Cingulo-Opercular,LeftACgGAnteriorCingulateGyrus_101,RightACgGAnteriorCingulateGyrus_100,,ACgG,#bcbd22,#00ff00
+AInsAnteriorInsula,103.0,102.0,,Insular Cortex,Cingulo-Opercular,LeftAInsAnteriorInsula_103,RightAInsAnteriorInsula_102,,AIns,#d62728,#75bd32
+AOrGAnteriorOrbitalGyrus,105.0,104.0,,Frontal Lobe,Orbito-Affective,LeftAOrGAnteriorOrbitalGyrus_105,RightAOrGAnteriorOrbitalGyrus_104,,AOrG,#bcbd22,#ff00ff
+AccumbensArea,30.0,23.0,,Subcortical Structures,,LeftAccumbensArea_30,RightAccumbensArea_23,,Acc,#e377c2,#032cfe
+Agd_laterobasal,238.0,239.0,,Limbic Cortex,,LeftAgd_laterobasal_238,RightAgd_laterobasal_239,,Agd_lb,#1f77b4,#7dfa86
+Agd_superficial,240.0,241.0,,Limbic Cortex,,LeftAgd_superficial_240,RightAgd_superficial_241,,Agd_sp,#1f77b4,#ffff80
+AnGAngularGyrus,107.0,106.0,,Parietal Lobe,Default,LeftAnGAngularGyrus_107,RightAnGAngularGyrus_106,,AnG,#9467bd,#800000
+BasalForebrain,75.0,76.0,,Subcortical Structures,,LeftBasalForebrain_75,RightBasalForebrain_76,,BF,#e377c2,#09f8c0
+BrainStem,,,35.0,Cerebellum,,,,BrainStem_35,BS,#7f7f7f,#000000
+COCentralOperculum,113.0,112.0,,Parietal Lobe,Somatomotor,LeftCOCentralOperculum_113,RightCOCentralOperculum_112,,CO,#9467bd,#165012
+CSF,,,46.0,Ventricles and CSF,,,,CSF_46,CSF,#17becf,#000000
+CalcCalcarineCortex,109.0,108.0,,Occipital Lobe,Visual1,LeftCalcCalcarineCortex_109,RightCalcCalcarineCortex_108,,Calc,#ff7f0e,#5510ac
+Caudate,37.0,36.0,,Subcortical Structures,,LeftCaudate_37,RightCaudate_36,,Caud,#e377c2,#8e801d
+CerebellarVermalLobulesI0x2DV,,,71.0,Cerebellum,,,,CerebellarVermalLobulesI0x2DV_71,CbVL1-5,#7f7f7f,#000000
+CerebellarVermalLobulesVI0x2DVII,,,72.0,Cerebellum,,,,CerebellarVermalLobulesVI0x2DVII_72,CbVL6-7,#7f7f7f,#000000
+CerebellarVermalLobulesVIII0x2DX,,,73.0,Cerebellum,,,,CerebellarVermalLobulesVIII0x2DX_73,CbVL8-10,#7f7f7f,#000000
+CerebellumExterior,39.0,38.0,,Cerebellum,,LeftCerebellumExterior_39,RightCerebellumExterior_38,,CbE,#7f7f7f,#000000
+CerebralWhiteMatter,45.0,44.0,,White Matter,,LeftCerebralWhiteMatter_45,RightCerebralWhiteMatter_44,,CWM,#8c564b,#000000
+CunCuneus,115.0,114.0,,Occipital Lobe,Visual1,LeftCunCuneus_115,RightCunCuneus_114,,Cun,#ff7f0e,#ff0080
+DentateNucleus,214.0,215.0,,Cerebellum,,LeftDentateNucleus_214,RightDentateNucleus_215,,DN,#7f7f7f,#000000
+EntEntorhinalArea,117.0,116.0,,Temporal Lobe,,LeftEntEntorhinalArea_117,RightEntEntorhinalArea_116,,Ent,#2ca02c,#f8409a
+FOFrontalOperculum,119.0,118.0,,Frontal Lobe,Language,LeftFOFrontalOperculum_119,RightFOFrontalOperculum_118,,FO,#bcbd22,#0080ff
+FRPFrontalPole,121.0,120.0,,Frontal Lobe,Frontoparietal,LeftFRPFrontalPole_121,RightFRPFrontalPole_120,,FRP,#bcbd22,#ff8000
+FuGFusiformGyrus,123.0,122.0,,Temporal Lobe,Ventral-Multimodal,LeftFuGFusiformGyrus_123,RightFuGFusiformGyrus_122,,FuG,#2ca02c,#7b490a
+GReGyrusRectus,125.0,124.0,,Frontal Lobe,Orbito-Affective,LeftGReGyrusRectus_125,RightGReGyrusRectus_124,,GRe,#bcbd22,#80bf80
+Hi_SPAM_CA10x2D3,242.0,243.0,,Limbic Cortex,,LeftHi_SPAM_CA10x2D3_242,RightHi_SPAM_CA10x2D3_243,,Hi_CA1,#1f77b4,#04c303
+Hi_SPAM_CA40x2DDG,244.0,245.0,,Limbic Cortex,,LeftHi_SPAM_CA40x2DDG_244,RightHi_SPAM_CA40x2DDG_245,,Hi_CA4,#1f77b4,#b4498f
+Hi_SPAM_subiculum,246.0,247.0,,Limbic Cortex,,LeftHi_SPAM_subiculum_246,RightHi_SPAM_subiculum_247,,Hi_Sub,#1f77b4,#6a96ad
+IOGInferiorOccipitalGyrus,129.0,128.0,,Occipital Lobe,Ventral-Multimodal,LeftIOGInferiorOccipitalGyrus_129,RightIOGInferiorOccipitalGyrus_128,,IOG,#ff7f0e,#50ed4f
+ITGInferiorTemporalGyrus,133.0,132.0,,Temporal Lobe,Ventral-Multimodal,LeftITGInferiorTemporalGyrus_133,RightITGInferiorTemporalGyrus_132,,ITG,#2ca02c,#ba7a5a
+InfLatVent,50.0,49.0,,Ventricles and CSF,,LeftInfLatVent_50,RightInfLatVent_49,,ILV,#17becf,#000000
+LOrGLateralOrbitalGyrus,137.0,136.0,,Frontal Lobe,Orbito-Affective,LeftLOrGLateralOrbitalGyrus_137,RightLOrGLateralOrbitalGyrus_136,,LOrG,#bcbd22,#fac683
+LateralVentricle,52.0,51.0,,Ventricles and CSF,,LeftLateralVentricle_52,RightLateralVentricle_51,,LV,#17becf,#000000
+LiGLingualGyrus,135.0,134.0,,Occipital Lobe,Visual1,LeftLiGLingualGyrus_135,RightLiGLingualGyrus_134,,LiG,#ff7f0e,#ff8080
+MCgGMiddleCingulateGyrus,139.0,138.0,,Limbic Cortex,Cingulo-Opercular,LeftMCgGMiddleCingulateGyrus_139,RightMCgGMiddleCingulateGyrus_138,,MCgG,#1f77b4,#f9c02a
+MFCMedialFrontalCortex,141.0,140.0,,Frontal Lobe,Default,LeftMFCMedialFrontalCortex_141,RightMFCMedialFrontalCortex_140,,MFC,#bcbd22,#a61152
+MFGMiddleFrontalGyrus,143.0,142.0,,Frontal Lobe,Frontoparietal,LeftMFGMiddleFrontalGyrus_143,RightMFGMiddleFrontalGyrus_142,,MFG,#bcbd22,#4d05fe
+MOGMiddleOccipitalGyrus,145.0,144.0,,Occipital Lobe,Visual2,LeftMOGMiddleOccipitalGyrus_145,RightMOGMiddleOccipitalGyrus_144,,MOG,#ff7f0e,#e0c7e4
+MOrGMedialOrbitalGyrus,147.0,146.0,,Frontal Lobe,Orbito-Affective,LeftMOrGMedialOrbitalGyrus_147,RightMOrGMedialOrbitalGyrus_146,,MOrG,#bcbd22,#e481f4
+MPoGPostcentralGyrusMedialSegment,149.0,148.0,,Parietal Lobe,Somatomotor,LeftMPoGPostcentralGyrusMedialSegment_149,RightMPoGPostcentralGyrusMedialSegment_148,,MPoG,#9467bd,#c9fd50
+MPrGPrecentralGyrusMedialSegment,151.0,150.0,,Frontal Lobe,Somatomotor,LeftMPrGPrecentralGyrusMedialSegment_151,RightMPrGPrecentralGyrusMedialSegment_150,,MPrG,#bcbd22,#086569
+MSFGSuperiorFrontalGyrusMedialSegment,153.0,152.0,,Frontal Lobe,Default,LeftMSFGSuperiorFrontalGyrusMedialSegment_153,RightMSFGSuperiorFrontalGyrusMedialSegment_152,,MSFG,#bcbd22,#00ffff
+MTGMiddleTemporalGyrus,155.0,154.0,,Temporal Lobe,Language,LeftMTGMiddleTemporalGyrus_155,RightMTGMiddleTemporalGyrus_154,,MTG,#2ca02c,#b4feb6
+OCPOccipitalPole,157.0,156.0,,Occipital Lobe,Visual1,LeftOCPOccipitalPole_157,RightOCPOccipitalPole_156,,OCP,#ff7f0e,#d93ffb
+OFuGOccipitalFusiformGyrus,161.0,160.0,,Occipital Lobe,Ventral-Multimodal,LeftOFuGOccipitalFusiformGyrus_161,RightOFuGOccipitalFusiformGyrus_160,,OFuG,#ff7f0e,#803cfb
+OpIFGOpercularPartOfTheInferiorFrontalGyrus,163.0,162.0,,Frontal Lobe,Language,LeftOpIFGOpercularPartOfTheInferiorFrontalGyrus_163,RightOpIFGOpercularPartOfTheInferiorFrontalGyrus_162,,OpIFG,#bcbd22,#ffff00
+OpticChiasm,,,69.0,Ventricles and CSF,,,,OpticChiasm_69,OC,#17becf,#000000
+OrIFGOrbitalPartOfTheInferiorFrontalGyrus,165.0,164.0,,Frontal Lobe,Orbito-Affective,LeftOrIFGOrbitalPartOfTheInferiorFrontalGyrus_165,RightOrIFGOrbitalPartOfTheInferiorFrontalGyrus_164,,OrIFG,#bcbd22,#00ff80
+PCgGPosteriorCingulateGyrus,167.0,166.0,,Limbic Cortex,Default,LeftPCgGPosteriorCingulateGyrus_167,RightPCgGPosteriorCingulateGyrus_166,,PCgG,#1f77b4,#0384aa
+PCuPrecuneus,169.0,168.0,,Parietal Lobe,Default,LeftPCuPrecuneus_169,RightPCuPrecuneus_168,,PCu,#9467bd,#472b5f
+PHGParahippocampalGyrus,171.0,170.0,,Limbic Cortex,Default,LeftPHGParahippocampalGyrus_171,RightPHGParahippocampalGyrus_170,,PHG,#1f77b4,#0302c7
+PInsPosteriorInsula,173.0,172.0,,Insular Cortex,Cingulo-Opercular,LeftPInsPosteriorInsula_173,RightPInsPosteriorInsula_172,,PIns,#d62728,#bac550
+POParietalOperculum,175.0,174.0,,Parietal Lobe,Somatomotor,LeftPOParietalOperculum_175,RightPOParietalOperculum_174,,PO,#9467bd,#d64312
+POrGPosteriorOrbitalGyrus,179.0,178.0,,Frontal Lobe,Orbito-Affective,LeftPOrGPosteriorOrbitalGyrus_179,RightPOrGPosteriorOrbitalGyrus_178,,POrG,#bcbd22,#499b04
+PPPlanumPolare,181.0,180.0,,Temporal Lobe,Auditory,LeftPPPlanumPolare_181,RightPPPlanumPolare_180,,PP,#2ca02c,#20b25d
+PTPlanumTemporale,185.0,184.0,,Temporal Lobe,Language,LeftPTPlanumTemporale_185,RightPTPlanumTemporale_184,,PT,#2ca02c,#27b8c2
+Pallidum,56.0,55.0,,Subcortical Structures,,LeftPallidum_56,RightPallidum_55,,Pal,#e377c2,#01f23f
+PoGPostcentralGyrus,177.0,176.0,,Parietal Lobe,Somatomotor,LeftPoGPostcentralGyrus_177,RightPoGPostcentralGyrus_176,,PoG,#9467bd,#56fec8
+PrGPrecentralGyrus,183.0,182.0,,Frontal Lobe,Somatomotor,LeftPrGPrecentralGyrus_183,RightPrGPrecentralGyrus_182,,PrG,#bcbd22,#7859b6
+Putamen,58.0,57.0,,Subcortical Structures,,LeftPutamen_58,RightPutamen_57,,Put,#e377c2,#078628
+RedNucleus,212.0,213.0,,Subcortical Structures,,LeftRedNucleus_212,RightRedNucleus_213,,RN,#e377c2,#4463ea
+SCASubcallosalArea,187.0,186.0,,Frontal Lobe,Orbito-Affective,LeftSCASubcallosalArea_187,RightSCASubcallosalArea_186,,SCA,#bcbd22,#000080
+SFGSuperiorFrontalGyrus,191.0,190.0,,Frontal Lobe,Frontoparietal,LeftSFGSuperiorFrontalGyrus_191,RightSFGSuperiorFrontalGyrus_190,,SFG,#bcbd22,#ff0000
+SMCSupplementaryMotorCortex,193.0,192.0,,Frontal Lobe,Somatomotor,LeftSMCSupplementaryMotorCortex_193,RightSMCSupplementaryMotorCortex_192,,SMC,#bcbd22,#88f30d
+SMGSupramarginalGyrus,195.0,194.0,,Parietal Lobe,Language,LeftSMGSupramarginalGyrus_195,RightSMGSupramarginalGyrus_194,,SMG,#9467bd,#617c6d
+SOGSuperiorOccipitalGyrus,197.0,196.0,,Occipital Lobe,Visual2,LeftSOGSuperiorOccipitalGyrus_197,RightSOGSuperiorOccipitalGyrus_196,,SOG,#ff7f0e,#ba99af
+SPLSuperiorParietalLobule,199.0,198.0,,Parietal Lobe,Dorsal-attention,LeftSPLSuperiorParietalLobule_199,RightSPLSuperiorParietalLobule_198,,SPL,#9467bd,#8080ff
+STGSuperiorTemporalGyrus,201.0,200.0,,Temporal Lobe,Auditory,LeftSTGSuperiorTemporalGyrus_201,RightSTGSuperiorTemporalGyrus_200,,STG,#2ca02c,#1146c3
+STN,208.0,209.0,,Subcortical Structures,,LeftSTN_208,RightSTN_209,,STN,#e377c2,#080e3f
+SubstantiaNigra,210.0,211.0,,Subcortical Structures,,LeftSubstantiaNigra_210,RightSubstantiaNigra_211,,SN,#e377c2,#41c6fe
+TMPTemporalPole,203.0,202.0,,Temporal Lobe,Ventral-Multimodal,LeftTMPTemporalPole_203,RightTMPTemporalPole_202,,TMP,#2ca02c,#af11cb
+TTGTransverseTemporalGyrus,207.0,206.0,,Temporal Lobe,Auditory,LeftTTGTransverseTemporalGyrus_207,RightTTGTransverseTemporalGyrus_206,,TTG,#2ca02c,#b6ad09
+Th_anterior,216.0,217.0,,Subcortical Structures,,LeftTh_anterior_216,RightTh_anterior_217,,Th_a,#e377c2,#3f1e06
+Th_geniculate,218.0,219.0,,Subcortical Structures,,LeftTh_geniculate_218,RightTh_geniculate_219,,Th_g,#e377c2,#80ffff
+Th_intralaminar,222.0,223.0,,Subcortical Structures,,LeftTh_intralaminar_222,RightTh_intralaminar_223,,Th_i,#e377c2,#fe3046
+Th_mediodorsal,220.0,221.0,,Subcortical Structures,,LeftTh_mediodorsal_220,RightTh_mediodorsal_221,,Th_md,#e377c2,#8b514e
+Th_posteriorAnterior,232.0,233.0,,Subcortical Structures,,LeftTh_posteriorAnterior_232,RightTh_posteriorAnterior_233,,Th_pa,#e377c2,#b962cc
+Th_pulvinar,224.0,225.0,,Subcortical Structures,,LeftTh_pulvinar_224,RightTh_pulvinar_225,,Th_p,#e377c2,#822587
+Th_ventroanterior,226.0,227.0,,Subcortical Structures,,LeftTh_ventroanterior_226,RightTh_ventroanterior_227,,Th_va,#e377c2,#4c732e
+Th_ventrolateral,228.0,229.0,,Subcortical Structures,,LeftTh_ventrolateral_228,RightTh_ventrolateral_229,,Th_vl,#e377c2,#4ad70b
+Th_ventroposterior,230.0,231.0,,Subcortical Structures,,LeftTh_ventroposterior_230,RightTh_ventroposterior_231,,Th_vp,#e377c2,#cfdf08
+TrIFGTriangularPartOfTheInferiorFrontalGyrus,205.0,204.0,,Frontal Lobe,Language,LeftTrIFGTriangularPartOfTheInferiorFrontalGyrus_205,RightTrIFGTriangularPartOfTheInferiorFrontalGyrus_204,,TrIFG,#bcbd22,#90c4fe

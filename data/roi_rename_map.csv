@@ -1,0 +1,167 @@
+nospace_name,space_name
+x3rdVentricle,3rd Ventricle
+x4thVentricle,4th Ventricle
+RightAccumbensArea,Right Accumbens Area
+LeftAccumbensArea,Left Accumbens Area
+BrainStem,Brain Stem
+RightCaudate,Right Caudate
+LeftCaudate,Left Caudate
+RightCerebellumExterior,Right Cerebellum Exterior
+LeftCerebellumExterior,Left Cerebellum Exterior
+RightCerebralWhiteMatter,Right Cerebral White Matter
+LeftCerebralWhiteMatter,Left Cerebral White Matter
+CSF,CSF
+RightInfLatVent,Right Inf Lat Vent
+LeftInfLatVent,Left Inf Lat Vent
+RightLateralVentricle,Right Lateral Ventricle
+LeftLateralVentricle,Left Lateral Ventricle
+RightPallidum,Right Pallidum
+LeftPallidum,Left Pallidum
+RightPutamen,Right Putamen
+LeftPutamen,Left Putamen
+RightVessel,Right vessel
+LeftVessel,Left vessel
+OpticChiasm,Optic Chiasm
+CerebellarVermalLobulesI0x2DV,Cerebellar Vermal Lobules I-V
+CerebellarVermalLobulesVI0x2DVII,Cerebellar Vermal Lobules VI-VII
+CerebellarVermalLobulesVIII0x2DX,Cerebellar Vermal Lobules VIII-X
+LeftBasalForebrain,Left Basal Forebrain
+RightBasalForebrain,Right Basal Forebrain
+RightACgGAnteriorCingulateGyrus,Right ACgG anterior cingulate gyrus
+LeftACgGAnteriorCingulateGyrus,Left ACgG anterior cingulate gyrus
+RightAInsAnteriorInsula,Right AIns anterior insula
+LeftAInsAnteriorInsula,Left AIns anterior insula
+RightAOrGAnteriorOrbitalGyrus,Right AOrG anterior orbital gyrus
+LeftAOrGAnteriorOrbitalGyrus,Left AOrG anterior orbital gyrus
+RightAnGAngularGyrus,Right AnG angular gyrus
+LeftAnGAngularGyrus,Left AnG angular gyrus
+RightCalcCalcarineCortex,Right Calc calcarine cortex
+LeftCalcCalcarineCortex,Left Calc calcarine cortex
+RightCOCentralOperculum,Right CO central operculum
+LeftCOCentralOperculum,Left CO central operculum
+RightCunCuneus,Right Cun cuneus
+LeftCunCuneus,Left Cun cuneus
+RightEntEntorhinalArea,Right Ent entorhinal area
+LeftEntEntorhinalArea,Left Ent entorhinal area
+RightFOFrontalOperculum,Right FO frontal operculum
+LeftFOFrontalOperculum,Left FO frontal operculum
+RightFRPFrontalPole,Right FRP frontal pole
+LeftFRPFrontalPole,Left FRP frontal pole
+RightFuGFusiformGyrus,Right FuG fusiform gyrus
+LeftFuGFusiformGyrus,Left FuG fusiform gyrus
+RightGReGyrusRectus,Right GRe gyrus rectus
+LeftGReGyrusRectus,Left GRe gyrus rectus
+RightIOGInferiorOccipitalGyrus,Right IOG inferior occipital gyrus
+LeftIOGInferiorOccipitalGyrus,Left IOG inferior occipital gyrus
+RightITGInferiorTemporalGyrus,Right ITG inferior temporal gyrus
+LeftITGInferiorTemporalGyrus,Left ITG inferior temporal gyrus
+RightLiGLingualGyrus,Right LiG lingual gyrus
+LeftLiGLingualGyrus,Left LiG lingual gyrus
+RightLOrGLateralOrbitalGyrus,Right LOrG lateral orbital gyrus
+LeftLOrGLateralOrbitalGyrus,Left LOrG lateral orbital gyrus
+RightMCgGMiddleCingulateGyrus,Right MCgG middle cingulate gyrus
+LeftMCgGMiddleCingulateGyrus,Left MCgG middle cingulate gyrus
+RightMFCMedialFrontalCortex,Right MFC medial frontal cortex
+LeftMFCMedialFrontalCortex,Left MFC medial frontal cortex
+RightMFGMiddleFrontalGyrus,Right MFG middle frontal gyrus
+LeftMFGMiddleFrontalGyrus,Left MFG middle frontal gyrus
+RightMOGMiddleOccipitalGyrus,Right MOG middle occipital gyrus
+LeftMOGMiddleOccipitalGyrus,Left MOG middle occipital gyrus
+RightMOrGMedialOrbitalGyrus,Right MOrG medial orbital gyrus
+LeftMOrGMedialOrbitalGyrus,Left MOrG medial orbital gyrus
+RightMPoGPostcentralGyrusMedialSegment,Right MPoG postcentral gyrus medial segment
+LeftMPoGPostcentralGyrusMedialSegment,Left MPoG postcentral gyrus medial segment
+RightMPrGPrecentralGyrusMedialSegment,Right MPrG precentral gyrus medial segment
+LeftMPrGPrecentralGyrusMedialSegment,Left MPrG precentral gyrus medial segment
+RightMSFGSuperiorFrontalGyrusMedialSegment,Right MSFG superior frontal gyrus medial segment
+LeftMSFGSuperiorFrontalGyrusMedialSegment,Left MSFG superior frontal gyrus medial segment
+RightMTGMiddleTemporalGyrus,Right MTG middle temporal gyrus
+LeftMTGMiddleTemporalGyrus,Left MTG middle temporal gyrus
+RightOCPOccipitalPole,Right OCP occipital pole
+LeftOCPOccipitalPole,Left OCP occipital pole
+RightOFuGOccipitalFusiformGyrus,Right OFuG occipital fusiform gyrus
+LeftOFuGOccipitalFusiformGyrus,Left OFuG occipital fusiform gyrus
+RightOpIFGOpercularPartOfTheInferiorFrontalGyrus,Right OpIFG opercular part of the inferior frontal gyrus
+LeftOpIFGOpercularPartOfTheInferiorFrontalGyrus,Left OpIFG opercular part of the inferior frontal gyrus
+RightOrIFGOrbitalPartOfTheInferiorFrontalGyrus,Right OrIFG orbital part of the inferior frontal gyrus
+LeftOrIFGOrbitalPartOfTheInferiorFrontalGyrus,Left OrIFG orbital part of the inferior frontal gyrus
+RightPCgGPosteriorCingulateGyrus,Right PCgG posterior cingulate gyrus
+LeftPCgGPosteriorCingulateGyrus,Left PCgG posterior cingulate gyrus
+RightPCuPrecuneus,Right PCu precuneus
+LeftPCuPrecuneus,Left PCu precuneus
+RightPHGParahippocampalGyrus,Right PHG parahippocampal gyrus
+LeftPHGParahippocampalGyrus,Left PHG parahippocampal gyrus
+RightPInsPosteriorInsula,Right PIns posterior insula
+LeftPInsPosteriorInsula,Left PIns posterior insula
+RightPOParietalOperculum,Right PO parietal operculum
+LeftPOParietalOperculum,Left PO parietal operculum
+RightPoGPostcentralGyrus,Right PoG postcentral gyrus
+LeftPoGPostcentralGyrus,Left PoG postcentral gyrus
+RightPOrGPosteriorOrbitalGyrus,Right POrG posterior orbital gyrus
+LeftPOrGPosteriorOrbitalGyrus,Left POrG posterior orbital gyrus
+RightPPPlanumPolare,Right PP planum polare
+LeftPPPlanumPolare,Left PP planum polare
+RightPrGPrecentralGyrus,Right PrG precentral gyrus
+LeftPrGPrecentralGyrus,Left PrG precentral gyrus
+RightPTPlanumTemporale,Right PT planum temporale
+LeftPTPlanumTemporale,Left PT planum temporale
+RightSCASubcallosalArea,Right SCA subcallosal area
+LeftSCASubcallosalArea,Left SCA subcallosal area
+RightSFGSuperiorFrontalGyrus,Right SFG superior frontal gyrus
+LeftSFGSuperiorFrontalGyrus,Left SFG superior frontal gyrus
+RightSMCSupplementaryMotorCortex,Right SMC supplementary motor cortex
+LeftSMCSupplementaryMotorCortex,Left SMC supplementary motor cortex
+RightSMGSupramarginalGyrus,Right SMG supramarginal gyrus
+LeftSMGSupramarginalGyrus,Left SMG supramarginal gyrus
+RightSOGSuperiorOccipitalGyrus,Right SOG superior occipital gyrus
+LeftSOGSuperiorOccipitalGyrus,Left SOG superior occipital gyrus
+RightSPLSuperiorParietalLobule,Right SPL superior parietal lobule
+LeftSPLSuperiorParietalLobule,Left SPL superior parietal lobule
+RightSTGSuperiorTemporalGyrus,Right STG superior temporal gyrus
+LeftSTGSuperiorTemporalGyrus,Left STG superior temporal gyrus
+RightTMPTemporalPole,Right TMP temporal pole
+LeftTMPTemporalPole,Left TMP temporal pole
+RightTrIFGTriangularPartOfTheInferiorFrontalGyrus,Right TrIFG triangular part of the inferior frontal gyrus
+LeftTrIFGTriangularPartOfTheInferiorFrontalGyrus,Left TrIFG triangular part of the inferior frontal gyrus
+RightTTGTransverseTemporalGyrus,Right TTG transverse temporal gyrus
+LeftTTGTransverseTemporalGyrus,Left TTG transverse temporal gyrus
+LeftSTN,Left STN
+RightSTN,Right STN
+LeftSubstantiaNigra,Left substantia nigra
+RightSubstantiaNigra,Right substantia nigra
+LeftRedNucleus,Left red nucleus
+RightRedNucleus,Right red nucleus
+LeftDentateNucleus,Left dentate nucleus
+RightDentateNucleus,Right dentate nucleus
+LeftTh_anterior,Left th_anterior
+RightTh_anterior,Right th_anterior
+LeftTh_geniculate,Left th_geniculate
+RightTh_geniculate,Right th_geniculate
+LeftTh_mediodorsal,Left th_mediodorsal
+RightTh_mediodorsal,Right th_mediodorsal
+LeftTh_intralaminar,Left th_intralaminar
+RightTh_intralaminar,Right th_intralaminar
+LeftTh_pulvinar,Left th_pulvinar
+RightTh_pulvinar,Right th_pulvinar
+LeftTh_ventroanterior,Left th_ventroanterior
+RightTh_ventroanterior,Right th_ventroanterior
+LeftTh_ventrolateral,Left th_ventrolateral
+RightTh_ventrolateral,Right th_ventrolateral
+LeftTh_ventroposterior,Left th_ventroposterior
+RightTh_ventroposterior,Right th_ventroposterior
+LeftTh_posteriorAnterior,Left th_posteriorAnterior
+RightTh_posteriorAnterior,Right th_posteriorAnterior
+LeftAgd_astr,Left agd_astr
+RightAgd_astr,Right agd_astr
+LeftAgd_centromedian,Left agd_centromedian
+RightAgd_centromedian,Right agd_centromedian
+LeftAgd_laterobasal,Left agd_laterobasal
+RightAgd_laterobasal,Right agd_laterobasal
+LeftAgd_superficial,Left agd_superficial
+RightAgd_superficial,Right agd_superficial
+LeftHi_SPAM_CA10x2D3,Left hi_SPAM_CA1-3
+RightHi_SPAM_CA10x2D3,Right hi_SPAM_CA1-3
+LeftHi_SPAM_CA40x2DDG,Left hi_SPAM_CA4-DG
+RightHi_SPAM_CA40x2DDG,Right hi_SPAM_CA4-DG
+LeftHi_SPAM_subiculum,Left hi_SPAM_subiculum
+RightHi_SPAM_subiculum,Right hi_SPAM_subiculum
