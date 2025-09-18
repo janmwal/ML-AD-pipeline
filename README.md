@@ -84,6 +84,11 @@ Both scripts support either **region-per-row** CSVs (long format: one row per re
 * Both plots (`shap_glass_brain.png`, `shap_waterfall.png`) are regenerated in each prediction folder. The waterfall shading marks the logit-transformed decision threshold (left of the line bathed in light blue → CN territory, right in light red → AD territory).
 * Works seamlessly across all prediction folders when pointing `--pred_folder` to `output_pred`.
 
+Example outputs:
+
+![Example glass brain](figs/shap_glass_brain.png)
+![Example waterfall](figs/shap_waterfall.png)
+
 ---
 
 ## CSV expectations
