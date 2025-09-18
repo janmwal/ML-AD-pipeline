@@ -1,29 +1,28 @@
 PREDICTION_THRESHOLDS = {
     'lgbm' : {
-        'unthrs' : { # AUC-ROC: 0.906
-            'youden' : 0.3154, # Sens=0.828 Spec=0.841 Prec=0.744 F1=0.784
-            'sensitivity' : 0.1767, # Sens=0.901 Spec=0.680 Prec=0.611 F1=0.728
-            'f1' : 0.4268 # Sens=0.763 Spec=0.901 Prec=0.812 F1=0.787
+        'unthrs' : { # AUC-ROC: 0.924
+            'youden' : 0.4136, # Sens=0.832 Spec=0.880 Prec=0.794 F1=0.813
+            'sensitivity' : 0.2703, # Sens=0.901 Spec=0.786 Prec=0.701 F1=0.789
+            'f1' : 0.4625 # Sens=0.815 Spec=0.894 Prec=0.811 F1=0.813
         },
-        'thrs' : { # AUC-ROC: 0.877
-            'youden' : 0.3416, # Sens=0.817 Spec=0.786 Prec=0.683 F1=0.744
-            'sensitivity' : 0.1776, # Sens=0.902 Spec=0.641 Prec=0.587 F1=0.711
-            'f1' : 0.3622 # Sens=0.800 Spec=0.800 Prec=0.694 F1=0.743
+        'thrs' : { # AUC-ROC: 0.865
+            'youden' : 0.5099, # Sens=0.706 Spec=0.870 Prec=0.755 F1=0.730
+            'sensitivity' : 0.1607, # Sens=0.902 Spec=0.566 Prec=0.541 F1=0.676
+            'f1' : 0.5099 # Sens=0.706 Spec=0.870 Prec=0.755 F1=0.730
         }
     },
     'extratrees' : {
-        'unthrs' : { # AUC-ROC: 0.918
-            'youden' : 0.3714, # Sens=0.862 Spec=0.836 Prec=0.746 F1=0.800
-            'sensitivity' : 0.3046, # Sens=0.901 Spec=0.749 Prec=0.668 F1=0.767
-            'f1' : 0.3834 # Sens=0.845 Spec=0.848 Prec=0.757 F1=0.798
+        'unthrs' : { # AUC-ROC: 0.938
+            'youden' : 0.4275, # Sens=0.858 Spec=0.901 Prec=0.829 F1=0.843
+            'sensitivity' : 0.3254, # Sens=0.901 Spec=0.853 Prec=0.774 F1=0.833
+            'f1' : 0.4275 # Sens=0.858 Spec=0.901 Prec=0.829 F1=0.843
         },
-        'thrs' : { # AUC-ROC: 0.872
-            'youden' : 0.4085, # Sens=0.740 Spec=0.841 Prec=0.725 F1=0.733
-            'sensitivity' : 0.2017, # Sens=0.902 Spec=0.571 Prec=0.544 F1=0.678
-            'f1' : 0.4040 # Sens=0.740 Spec=0.839 Prec=0.722 F1=0.731
+        'thrs' : { # AUC-ROC: 0.870
+            'youden' : 0.3695, # Sens=0.779 Spec=0.822 Prec=0.712 F1=0.744
+            'sensitivity' : 0.2197, # Sens=0.902 Spec=0.578 Prec=0.548 F1=0.682
+            'f1' : 0.3695 # Sens=0.779 Spec=0.822 Prec=0.712 F1=0.744
         }
     }
-
 }
-CLASS_LABELS = {0: "CN", 1: "AD"}
 
+CLASS_LABELS = {0: "CN", 1: "AD"}

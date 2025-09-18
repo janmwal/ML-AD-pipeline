@@ -1,0 +1,41 @@
+{
+  "model": "extratrees",
+  "threshold": false,
+  "study_name": "adclf_tiv_unnorm_extratrees_unthrs",
+  "storage": "sqlite:///optuna_ml_ad.db",
+  "start_time": "2025-09-18T18:46:25.181795",
+  "end_time": "2025-09-18T19:00:48.834157",
+  "duration_seconds": 863.652362,
+  "metric": "roc_auc",
+  "best_value": 0.9196174887006705,
+  "metrics": {
+    "roc_auc": 0.9382010801828002,
+    "f1": 0.8036951501154734,
+    "accuracy": 0.8686244204018547,
+    "precision": 0.8656716417910447,
+    "recall": 0.75
+  },
+  "n_trials": 200,
+  "best_params": {
+    "n_estimators": 1142,
+    "max_depth": 24,
+    "max_features": 0.5,
+    "min_samples_split": 4,
+    "min_samples_leaf": 1,
+    "bootstrap": false,
+    "criterion": "entropy",
+    "class_weight": "balanced"
+  },
+  "artifacts": {
+    "model": "models/extratrees/unthrs/model.joblib",
+    "best_params": "models/extratrees/unthrs/best_params.json",
+    "metadata": "models/extratrees/unthrs/metadata.json",
+    "trials": "models/extratrees/unthrs/trials.csv",
+    "splits": {
+      "X_train": "models/extratrees/unthrs/X_train.csv",
+      "X_test": "models/extratrees/unthrs/X_test.csv",
+      "y_train": "models/extratrees/unthrs/y_train.csv",
+      "y_test": "models/extratrees/unthrs/y_test.csv"
+    }
+  }
+}

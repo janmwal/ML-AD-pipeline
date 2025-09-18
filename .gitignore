@@ -1,16 +1,5 @@
-.cache
-.codex
-.conda
-.config
-.dotnet
-.ipynb_checkpoints
-.local
-.ipython
-.jupyter
-.npm
-.saturn
-.ssh
-.vscode-server
+.devenv
+__pycache__
 .gitconfig
 cmake
 data
@@ -27,6 +16,8 @@ artifacts
 .bash_history
 .saturn_is_setup
 .wget-hsts
+__pycache__
+.git-credentials
 
 jupyterlab-workspace.json
 logs.log.gitconfig

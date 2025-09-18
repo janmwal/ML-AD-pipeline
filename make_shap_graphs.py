@@ -10,6 +10,48 @@ import json
 import shap
 from pathlib import Path
 import joblib
+from typing import Dict, Optional
+
+
+def _load_space_to_index_map() -> Dict[str, int]:
+    rename_path = Path("data/roi_rename_map.csv")
+    neuro_path = Path("data/neuromorphometrics.csv")
+    if not rename_path.exists() or not neuro_path.exists():
+        return {}
+
+    rename_df = pd.read_csv(rename_path)
+    space_to_nospace = {row["space_name"]: row["nospace_name"] for _, row in rename_df.iterrows()}
+    nospace_to_space = {v: k for k, v in space_to_nospace.items()}
+
+    neuro_df = pd.read_csv(neuro_path)
+    mapping: Dict[str, int] = {}
+
+    def _record(nospace: Optional[str], idx_val: Optional[float]) -> None:
+        if not nospace or nospace not in nospace_to_space or pd.isna(idx_val):
+            return
+        try:
+            mapping[nospace_to_space[nospace]] = int(idx_val)
+        except (ValueError, TypeError):
+            pass
+
+    for _, row in neuro_df.iterrows():
+        left_full = row.get("left_full_name")
+        right_full = row.get("right_full_name")
+        mid_full = row.get("midline_full_name")
+
+        if isinstance(left_full, str):
+            nospace = left_full.split("_")[0]
+            _record(nospace, row.get("left_id"))
+        if isinstance(right_full, str):
+            nospace = right_full.split("_")[0]
+            _record(nospace, row.get("right_id"))
+        if isinstance(mid_full, str):
+            nospace = mid_full.split("_")[0]
+            _record(nospace, row.get("midline_id"))
+
+    return mapping
+
+SPACE_TO_INDEX_MAP = _load_space_to_index_map()
 
 
 def glass_brain_plot(df, value_col, idx_col, title=None, cmap='Reds', vmax=None, vmin=None, display_mode='lyrz'):
@@ -19,7 +61,7 @@ def glass_brain_plot(df, value_col, idx_col, title=None, cmap='Reds', vmax=None,
             'region_idx' : df[idx_col]
         })
     # Load the 3D labeled atlas NIfTI
-    label_img = image.load_img('data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT_ants.nii') # old : data/labels_neuromorphics_extra.nii (we don't know the patient) or data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT.nii (from ferath)
+    label_img = image.load_img('data/label_neuromorphometrics.nii') # old : data/labels_neuromorphics_extra.nii (we don't know the patient) or data/wlabel_sPR06786_AD151295-0012-00001-000176-01_MT.nii (from ferath)
     label_data = label_img.get_fdata()
 
     # Make an empty stat map
@@ -95,20 +137,16 @@ def glass_brain_plot(df, value_col, idx_col, title=None, cmap='Reds', vmax=None,
         return display 
     
 def main():
-    parser = argparse.ArgumentParser(description="Predict + SHAP from per-region CSV")
+    parser = argparse.ArgumentParser(description="Generate SHAP graphs from prediction outputs")
     parser.add_argument(
         "--pred_folder",
         required=False,
         default="output_pred",
         type=str,
-        help="Path to prediction folder from run_classification script"
-    )
-    parser.add_argument(
-        "--output_folder",
-        required=False,
-        type=str,
-        default="output_pred",
-        help="Directory to write outputs (created as output_pred if missing)"
+        help=(
+            "Path to either a single prediction folder (containing shap_original_long.csv) "
+            "or a directory of multiple prediction folders."
+        ),
     )
     parser.add_argument(
         "--top_k",
@@ -120,118 +158,157 @@ def main():
     args = parser.parse_args()
 
     pred_dir = Path(args.pred_folder)
-    out_dir  = Path(args.output_folder)
-    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # ---- 1) Load the SHAP long CSV (robust to comma/semicolon) ----
-    shap_long_path = pred_dir / "shap_original_long.csv"
-    if not shap_long_path.exists():
-        raise FileNotFoundError(f"Could not find {shap_long_path}. Run the classifier script first.")
-
-    df = pd.read_csv(shap_long_path, sep=None, engine="python")
-
-    # Validate required columns
-    required_cols = {"region_name", "region_index", "shap_value", "feature_value"}
-    missing = required_cols - set(df.columns)
-    if missing:
-        raise ValueError(f"{shap_long_path} is missing required columns: {sorted(missing)}")
-
-    # ---- 2) Glass brain plot (save via nilearn's Display) ----
-    gb_disp = glass_brain_plot(
-        df=df,
-        value_col="shap_value",
-        idx_col="region_index",
-        title=None,
-        display_mode="lyrz",
-        cmap="seismic"
-    )
-    gb_png = out_dir / "shap_glass_brain.png"
-    gb_disp.savefig(str(gb_png))
-    try:
-        gb_disp.close()  # nilearn Display supports close()
-    except Exception:
-        pass
-
-    # 1: Load the JSON config file args.pred_folder/prediction.json
-    meta_path = pred_dir / "prediction.json"
-    if not meta_path.exists():
-        raise FileNotFoundError(f"prediction.json not found at {meta_path}")
-
-    with open(meta_path, "r") as f:
-        meta = json.load(f)
-
-    # 2) Load the shap explainer based on the model (to get a matching base value)
-    expected_value = meta.get("shap_expected_value")
-    if expected_value is None:
-        raise ValueError("prediction.json missing expected_value; rerun classification script.")
-
-
-    # 2: Build a SHAP Explanation directly from the long CSV
-    # Keep ALL features; SHAP will aggregate the rest into an "others" bar when max_display < n_features
-    # ---- Build Explanation with ALL features so SHAP can add "others" automatically ----
-    df_all = df.copy()
-    df_all["abs_shap"] = df_all["shap_value"].abs()
-    df_all = df_all.sort_values("abs_shap", ascending=False)
-
-    expl = shap.Explanation(
-        values=df_all["shap_value"].to_numpy(),
-        base_values=expected_value,
-        data=None, #df_all["feature_value"].to_numpy(),
-        feature_names=df_all["region_name"].tolist()
-    )
-
-    # ---- Make the figure taller (scaled by how many features you display) ----
-    # Base height 6, plus a bit per feature displayed (capped to avoid monster figures)
-    features_shown = min(args.top_k, len(df_all))
-    fig_height = min(12, max(6, 4 + 0.22 * features_shown))
-    plt.figure(figsize=(8, fig_height))
-
-    # ---- Draw waterfall (top_k individual features + SHAP "others") ----
-    # Get current axes
-    ax = plt.gca()
-    ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=-1)
-
-    shap.plots.waterfall(expl, max_display=args.top_k, show=False)
-
-    # ---- Annotation: single sum of all SHAPs, base, total, probability ----
-    sum_shap = float(df_all["shap_value"].sum())
-    total = expected_value + sum_shap
-
-    proba_from_meta = meta.get("proba", None)
-    if proba_from_meta is not None:
-        p_annot = float(proba_from_meta)
-        p_note = "probability from model output"
+    if (pred_dir / "shap_original_long.csv").exists():
+        target_dirs = [pred_dir]
     else:
-        p_annot = 1.0 / (1.0 + np.exp(-total))
-        p_note = "probability via sigmoid(total)"
+        target_dirs = sorted(
+            p for p in pred_dir.glob("*/")
+            if (p / "shap_original_long.csv").exists()
+        )
+        if not target_dirs:
+            raise FileNotFoundError(
+                f"No prediction folders with shap_original_long.csv found under {pred_dir}"
+            )
 
-    thr = meta.get("threshold_used", None)
-    label = meta.get("predicted_label", None)
+    for folder in target_dirs:
+        shap_long_path = folder / "shap_original_long.csv"
+        print(f"Processing {folder}")
 
-    lines = [
-        f"Base = {expected_value:.3f}",
-        f"Σ SHAP(all) = {sum_shap:.3f}",
-        f"Total = {total:.3f}",
-        f"P(AD) ≈ {p_annot:.3f}  ({p_note})"
-    ]
-    if thr is not None and label is not None:
-        lines.append(f"Threshold = {float(thr):.3f} → Label = {label}")
-    elif thr is not None:
-        lines.append(f"Threshold = {float(thr):.3f}")
+        out_dir = folder
+        out_dir.mkdir(parents=True, exist_ok=True)
 
-    # ---- Reserve a top band for the annotation & place it there ----
-    # Leave ~14% of the figure height free at the top for the box
-    plt.tight_layout(rect=[0, 0, 1, 0.93])
-    fig = plt.gcf()
-    fig.text(
-        0.01, 0.98, "\n".join(lines),
-        ha="left", va="top", fontsize=9,
-        transform=fig.transFigure,
-        bbox=dict(boxstyle="round", facecolor="white", alpha=0.9, linewidth=0.6)
-    )
+        df = pd.read_csv(shap_long_path, sep=None, engine="python")
 
-    plt.savefig(out_dir / "shap_waterfall.png", dpi=150, bbox_inches="tight")
-    plt.close()
+        if "region_index" in df.columns and SPACE_TO_INDEX_MAP:
+            mapped = df["region_name"].map(SPACE_TO_INDEX_MAP)
+            df["region_index"] = df["region_index"].fillna(mapped)
+            if df["region_index"].isna().all():
+                df["region_index"] = mapped
+        elif SPACE_TO_INDEX_MAP:
+            df["region_index"] = df["region_name"].map(SPACE_TO_INDEX_MAP)
+
+        if df["region_index"].isna().any():
+            missing_regions = df.loc[df["region_index"].isna(), "region_name"].tolist()
+            print(
+                f"[WARN] Skipping regions without atlas indices in {folder}: {missing_regions[:5]}"
+            )
+            df = df.dropna(subset=["region_index"]).copy()
+
+        if df.empty:
+            print(f"[WARN] No regions with valid indices for {folder}; skipping plots.")
+            continue
+
+        df["region_index"] = df["region_index"].astype(int)
+
+        # Validate required columns
+        required_cols = {"region_name", "region_index", "shap_value", "feature_value"}
+        missing = required_cols - set(df.columns)
+        if missing:
+            raise ValueError(f"{shap_long_path} is missing required columns: {sorted(missing)}")
+
+        # ---- 2) Glass brain plot (save via nilearn's Display) ----
+        gb_disp = glass_brain_plot(
+            df=df,
+            value_col="shap_value",
+            idx_col="region_index",
+            title=None,
+            display_mode="lyrz",
+            cmap="seismic"
+        )
+        gb_png = out_dir / "shap_glass_brain.png"
+        gb_disp.savefig(str(gb_png))
+        try:
+            gb_disp.close()  # nilearn Display supports close()
+        except Exception:
+            pass
+
+        meta_path = folder / "prediction.json"
+        if not meta_path.exists():
+            raise FileNotFoundError(f"prediction.json not found at {meta_path}")
+
+        with open(meta_path, "r") as f:
+            meta = json.load(f)
+
+        expected_value = meta.get("shap_expected_value")
+        if expected_value is None:
+            raise ValueError("prediction.json missing expected_value; rerun classification script.")
+
+        df_all = df.copy()
+        df_all["abs_shap"] = df_all["shap_value"].abs()
+        df_all = df_all.sort_values("abs_shap", ascending=False)
+
+        expl = shap.Explanation(
+            values=df_all["shap_value"].to_numpy(),
+            base_values=expected_value,
+            data=None,
+            feature_names=df_all["region_name"].tolist()
+        )
+
+        features_shown = min(args.top_k, len(df_all))
+        fig_height = min(12, max(6, 4 + 0.22 * features_shown))
+        plt.figure(figsize=(8, fig_height))
+
+        ax = plt.gca()
+
+        shap.plots.waterfall(expl, max_display=args.top_k, show=False)
+
+        threshold_prob = meta.get("threshold_used", None)
+        threshold_logit: Optional[float] = None
+        if threshold_prob is not None:
+            try:
+                threshold_prob = float(threshold_prob)
+                if 0 < threshold_prob < 1:
+                    threshold_logit = float(np.log(threshold_prob / (1.0 - threshold_prob)))
+            except (TypeError, ValueError):
+                threshold_logit = None
+
+        xmin, xmax = ax.get_xlim()
+        if threshold_logit is not None:
+            ax.axvspan(xmin, threshold_logit, color="#1f77b4", alpha=0.08, zorder=-2)
+            ax.axvspan(threshold_logit, xmax, color="#d62728", alpha=0.08, zorder=-2)
+            ax.axvline(threshold_logit, color="black", linestyle="--", linewidth=1.2, zorder=-1)
+        else:
+            ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=-1)
+
+        ax.set_xlim(xmin, xmax)
+
+        sum_shap = float(df_all["shap_value"].sum())
+        total = expected_value + sum_shap
+
+        proba_from_meta = meta.get("proba", None)
+        if proba_from_meta is not None:
+            p_annot = float(proba_from_meta)
+            p_note = "probability from model output"
+        else:
+            p_annot = 1.0 / (1.0 + np.exp(-total))
+            p_note = "probability via sigmoid(total)"
+
+        thr = threshold_prob if threshold_prob is not None else meta.get("threshold_used", None)
+        label = meta.get("predicted_label", None)
+
+        lines = [
+            f"Base = {expected_value:.3f}",
+            f"Σ SHAP(all) = {sum_shap:.3f}",
+            f"Total = {total:.3f}",
+            f"P(AD) ≈ {p_annot:.3f}  ({p_note})"
+        ]
+        if thr is not None and label is not None:
+            lines.append(f"Threshold = {float(thr):.3f} → Label = {label}")
+        elif thr is not None:
+            lines.append(f"Threshold = {float(thr):.3f}")
+
+        plt.tight_layout(rect=[0, 0, 1, 0.93])
+        fig = plt.gcf()
+        fig.text(
+            0.01, 0.98, "\n".join(lines),
+            ha="left", va="top", fontsize=9,
+            transform=fig.transFigure,
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.9, linewidth=0.6)
+        )
+
+        plt.savefig(out_dir / "shap_waterfall.png", dpi=150, bbox_inches="tight")
+        plt.close()
 
 
     # ================== END COMPLETION ==================
