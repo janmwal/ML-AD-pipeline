@@ -1,16 +1,9 @@
 .cache
-.codex
-.conda
-.config
-.dotnet
+.devenv
 .ipynb_checkpoints
 .local
 .ipython
 .jupyter
-.npm
-.saturn
-.ssh
-.vscode-server
 .gitconfig
 cmake
 data

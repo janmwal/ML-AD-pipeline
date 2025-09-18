@@ -1,0 +1,44 @@
+{
+  "model": "lgbm",
+  "threshold": false,
+  "study_name": "adclf_tiv_unnorm_lgbm_unthrs",
+  "storage": "sqlite:///optuna_ml_ad.db",
+  "start_time": "2025-09-18T17:15:44.759375",
+  "end_time": "2025-09-18T17:25:50.080277",
+  "duration_seconds": 605.320902,
+  "metric": "roc_auc",
+  "best_value": 0.9103262709344928,
+  "metrics": {
+    "roc_auc": 0.9286248442044038,
+    "f1": 0.8008752735229759,
+    "accuracy": 0.8593508500772797,
+    "precision": 0.8133333333333334,
+    "recall": 0.7887931034482759
+  },
+  "n_trials": 100,
+  "best_params": {
+    "learning_rate": 0.08083435061225228,
+    "num_leaves": 192,
+    "max_depth": 14,
+    "min_child_samples": 69,
+    "subsample": 0.7771764847493848,
+    "colsample_bytree": 0.6733541240356852,
+    "reg_alpha": 0.00011107958355127998,
+    "reg_lambda": 2.328505219549296,
+    "min_split_gain": 0.002470540758239076,
+    "n_estimators": 113,
+    "class_weight": "balanced"
+  },
+  "artifacts": {
+    "model": "models/lgbm/unthrs/model.joblib",
+    "best_params": "models/lgbm/unthrs/best_params.json",
+    "metadata": "models/lgbm/unthrs/metadata.json",
+    "trials": "models/lgbm/unthrs/trials.csv",
+    "splits": {
+      "X_train": "models/lgbm/unthrs/X_train.csv",
+      "X_test": "models/lgbm/unthrs/X_test.csv",
+      "y_train": "models/lgbm/unthrs/y_train.csv",
+      "y_test": "models/lgbm/unthrs/y_test.csv"
+    }
+  }
+}
