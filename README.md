@@ -1,165 +1,113 @@
-# Project README
+# Neurodegeneration Classification Pipeline
 
-Minimal, functional docs for the **current** scripts.
+This repository exposes a light MLOps pipeline for predicting Alzheimer’s disease probability from region-level volumetric CSVs and producing SHAP-based explanations. Two entry points matter:
 
----
+* `run_classification.py` – loads a pretrained classifier, aligns features, predicts the AD probability, and writes the full set of artefacts needed for downstream inference.
+* `make_shap_graphs.py` – regenerates SHAP glass-brain and waterfall plots from the saved prediction folders.
 
-## 1) Setup (venv + requirements)
-
-```bash
-python3.12 -m venv .venv
-# macOS/Linux
-source .venv/bin/activate
-python -V # should print 3.12.x
-
-python -m pip install -U pip setuptools wheel
-pip install -r requirements.txt
-pip check
-```
-
-> Make sure you run the scripts from an activated virtual environment.
+Both scripts support either **region-per-row** CSVs (long format: one row per region) or **subject-per-row** CSVs (wide format) containing a `PR_number` column.
 
 ---
 
-## 2) Input CSV (per‑region rows for one individual)
+## Typical workflow
 
-An example file is provided at **`data/seg_example.csv`**. Each row is **one brain region** for the **same subject**.
+1. **Create and activate a Python 3.12 virtual environment**
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate  # macOS/Linux
+   python -V                  # should print 3.12.x
 
-Required columns:
+   pip install -U pip setuptools wheel
+   pip install -r requirements.txt
+   ```
 
-* `name` — region name (string)
-* `index` — region index / id (int)
-* `GMvalues_unthresholded` — numeric value per region (float)
-* `GMvalues_thresholded` — numeric value per region (float)
+2. **Run the classifier**
+   ```bash
+   python run_classification.py \
+     --input_csv data/seg_example.csv \
+     --model lgbm \
+     --GM_thrs True \
+     --thrs_target youden \
+     --output_folder output_pred \
+     --overwrite
+   ```
+   * Region-per-row CSVs (`name`, `index`, `GMvalues_unthresholded`, `GMvalues_thresholded`) generate `output_pred/PRxxxx_ID_<model>_<thrs|unthrs>` automatically (e.g. `sPR04383_NS300459-...` → `PR04383_NS300459_lgbm_unthrs`).
+   * Subject-per-row CSVs (wide format) reuse the value in `PR_number` for the folder name. If nothing that looks like `PR12345_ID` is found, the folder becomes `unnamed_<model>_<suffix>`.
+   * `--overwrite` clears any existing folder before writing. Without it, suffixes `_0`, `_1`, … are appended to avoid collisions.
 
-`run_classification.py` will select the appropriate GM column based on `--GM_thrs`.
+3. **Regenerate SHAP plots**
+   ```bash
+   # single folder
+   python make_shap_graphs.py --pred_folder output_pred/PR04383_NS300459_lgbm_unthrs
 
----
-
-## 3) Script: `run_classification.py`
-
-Loads a **pretrained model family** and produces a prediction for the provided subject‑level per‑region CSV.
-
-### Arguments (current)
-
-```python
-parser.add_argument(
-    "--input_csv",
-    required=True,
-    type=str,
-    help="Path to subject per-region CSV"
-)
-parser.add_argument(
-    "--output_folder",
-    required=False,
-    type=str,
-    default="output_pred",
-    help="Directory to write outputs (created as output_pred if missing)"
-)
-parser.add_argument(
-    "--model",
-    required=True,
-    choices=["lgbm", "extratrees"],
-    help="Model family to load"
-)
-parser.add_argument(
-    "--GM_thrs",
-    required=True,
-    type=str2bool,
-    help="Use thresholded GM values (True/False)"
-)
-parser.add_argument(
-    "--thrs_target",
-    required=True,
-    choices=["youden", "sensitivity", "f1"],
-    help="Which precomputed classification threshold to use."
-)
-```
-
-### Example (pick one combination)
-
-```bash
-python run_classification.py \
-  --input_csv data/seg_example.csv \
-  --model lgbm \
-  --GM_thrs True \
-  --thrs_target youden \
-  --output_folder output_pred
-```
-
-### Output
-
-Writes prediction artifacts into `--output_folder` (default `output_pred`).
+   # batch over all prediction folders
+   python make_shap_graphs.py --pred_folder output_pred
+   ```
+   Glass-brain and waterfall PNGs land directly in each prediction folder (existing plots are overwritten).
 
 ---
 
-## 4) Script: `make_shap_graphs.py`
+## `run_classification.py`
 
-Generates SHAP visualizations from the **prediction folder** produced by `run_classification.py` (and the same per‑region CSV schema).
+### CLI summary
 
-### Arguments (current)
+| Argument | Default | Notes |
+|----------|---------|-------|
+| `--input_csv` | **required** | Region-per-row CSV **or** subject-per-row CSV. |
+| `--model` | `lgbm` | Only LightGBM is currently supported; flag remains for forward compatibility. |
+| `--GM_thrs` | `False` | Boolean selector for thresholded GM (`True` → `GMvalues_thresholded`, `False` → `GMvalues_unthresholded`). |
+| `--thrs_target` | `youden` | Threshold strategy: `youden`, `sensitivity`, or `f1`. |
+| `--output_folder` | `output_pred` | Base directory for subject folders. |
+| `--overwrite` | `False` | Clears any existing subject folder before writing when set. |
 
-```python
-parser.add_argument(
-    "--pred_folder",
-    required=False,
-    default="output_pred",
-    type=str,
-    help="Path to prediction folder from run_classification script"
-)
-parser.add_argument(
-    "--output_folder",
-    required=False,
-    type=str,
-    default="output_pred",
-    help="Directory to write outputs (created as output_pred if missing)"
-)
-parser.add_argument(
-    "--top_k",
-    required=False,
-    type=int,
-    default=10,
-    help="How many features to show in the waterfall plot (by |SHAP|)."
-)
-```
+### Behaviour highlights
 
-### Outputs
-
-Saved to `--output_folder`:
-
-* `shap_glass_brain.png` — Nilearn **glass‑brain** visualization colored by SHAP values.
-* `shape_waterfall.png` — SHAP **waterfall** plot (top‑K features by |SHAP|).
+* Automatically aligns features and records missing/extra columns inside `prediction.json`.
+* Output naming convention: `PRxxxx_ID_<model>_<thrs|unthrs>` derived from the filename / `PR_number`; falls back to `unnamed_...`.
+* Artefacts include `prediction.json`, `X_new.csv`, SHAP CSVs (`shap_transformed`, `shap_original`, `shap_original_long`), and a `merged_row.csv` combining raw values + SHAP contributions + probability.
+* SHAP outputs are stored in logit space and the waterfall metadata reports logit totals, probabilities, and thresholds.
 
 ---
 
-## 5) Typical workflow
+## `make_shap_graphs.py`
 
-1. Prepare your per‑region CSV (or use `data/seg_example.csv`).
+### CLI summary
 
-2. Run classification (example):
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `--pred_folder` | optional (default `output_pred`) | Accepts a single prediction folder **or** a directory containing multiple subfolders with `shap_original_long.csv`. |
+| `--top_k` | optional (default `10`) | Number of top-|SHAP| features shown in the waterfall plot; the remainder are aggregated into "others". |
 
-```bash
-python run_classification.py \
-  --input_csv data/seg_example.csv \
-  --model lgbm \
-  --output_folder output_pred
-```
+### Behaviour highlights
 
-3. Generate SHAP figures:
-
-```bash
-python make_shap_graphs.py \
-  --pred_folder output_pred \
-  --output_folder output_pred \
-  --top_k 10
-```
-![Shap glass brain](figs/shap_glass_brain.png)
-![Shap waterfall](figs/shap_waterfall.png)
+* Automatically maps region names back to Neuromorphometrics atlas indices using `data/roi_rename_map.csv` and `data/neuromorphometrics.csv`. Regions lacking a recognised index are skipped with a warning.
+* Both plots (`shap_glass_brain.png`, `shap_waterfall.png`) are regenerated in each prediction folder. The waterfall shading marks the logit-transformed decision threshold (left of the line bathed in light blue → CN territory, right in light red → AD territory).
+* Works seamlessly across all prediction folders when pointing `--pred_folder` to `output_pred`.
 
 ---
 
-## 6) Notes
+## CSV expectations
 
-* `--GM_thrs True` uses `GMvalues_thresholded`; `False` uses `GMvalues_unthresholded`.
-* Keep the CSV schema exactly as shown; scripts expect these column names.
-* `--pred_folder` should point to the folder produced by `run_classification.py`.
+* **Region-per-row (long) format**
+  | Column | Description |
+  |--------|-------------|
+  | `name` | Region name (string; spaces allowed) |
+  | `index` | Atlas index (int). Optional: will be reconstructed for plotting if missing. |
+  | `GMvalues_unthresholded` | Numeric value per region |
+  | `GMvalues_thresholded` | Numeric value per region |
+
+* **Subject-per-row (wide) format**
+  | Column | Description |
+  |--------|-------------|
+  | `PR_number` | Subject identifier used to name prediction folders |
+  | other columns | Feature names must match the model training schema |
+
+Keep column names exactly as shown. The scripts infer feature alignment automatically.
+
+---
+
+## Notes
+
+* Always run the scripts from the activated virtual environment to ensure LightGBM, SHAP, and dependencies are available.
+* `optuna_ml_ad.db` and the `models/` directory hold the tuned artefacts; they are expected to be present before invoking `run_classification.py`.
+* Example outputs appear under `output_pred/` after running the workflow, ready for inspection or for the SHAP plotting script.

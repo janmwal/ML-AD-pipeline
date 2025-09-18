@@ -9,6 +9,9 @@ cmake
 data
 output_pred
 !data/seg_example.csv
+!data/roi_rename_map.csv
+!data/VOL_GM_unthrs.csv
+!data/neuromorphometrics.csv
 project
 LightGBM
 log/

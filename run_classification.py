@@ -563,15 +563,15 @@ def main():
     parser.add_argument(
         "--model", 
         required=False, 
-        default="extratrees",
-        choices=["lgbm", "extratrees"], 
-        help="Model family to load")
+        default="lgbm",
+        choices=["lgbm",], 
+        help="Model family to load (for now only lgbm works)")
     parser.add_argument(
         "--GM_thrs", 
         required=False, 
         default=False,
         type=str2bool, 
-        help="Use thresholded GM values (True/False)")
+        help="Use thresholded GM values (True/False). Should match the input csv if subject-per-row format.")
     parser.add_argument(
         "--thrs_target",
         required=False,
