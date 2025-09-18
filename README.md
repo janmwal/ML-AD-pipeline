@@ -24,9 +24,9 @@ Both scripts support either **region-per-row** CSVs (long format: one row per re
 2. **Run the classifier**
    ```bash
    python run_classification.py \
-     --input_csv data/seg_example.csv \
+     --input_csv data/VOL_GM_unthrs.csv \
      --model lgbm \
-     --GM_thrs True \
+     --GM_thrs False \
      --thrs_target youden \
      --output_folder output_pred \
      --overwrite
