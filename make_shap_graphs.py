@@ -188,18 +188,19 @@ def main():
         elif SPACE_TO_INDEX_MAP:
             df["region_index"] = df["region_name"].map(SPACE_TO_INDEX_MAP)
 
+        missing_regions = []
         if df["region_index"].isna().any():
             missing_regions = df.loc[df["region_index"].isna(), "region_name"].tolist()
-            print(
-                f"[WARN] Skipping regions without atlas indices in {folder}: {missing_regions[:5]}"
-            )
-            df = df.dropna(subset=["region_index"]).copy()
+            if missing_regions:
+                print(
+                    f"[WARN] Skipping regions without atlas indices in {folder}: {missing_regions[:5]}"
+                )
 
-        if df.empty:
-            print(f"[WARN] No regions with valid indices for {folder}; skipping plots.")
-            continue
-
-        df["region_index"] = df["region_index"].astype(int)
+        df_glass = df.dropna(subset=["region_index"]).copy()
+        if not df_glass.empty:
+            df_glass["region_index"] = df_glass["region_index"].astype(int)
+        else:
+            print(f"[WARN] No regions with valid indices for glass brain in {folder}.")
 
         # Validate required columns
         required_cols = {"region_name", "region_index", "shap_value", "feature_value"}
@@ -208,20 +209,21 @@ def main():
             raise ValueError(f"{shap_long_path} is missing required columns: {sorted(missing)}")
 
         # ---- 2) Glass brain plot (save via nilearn's Display) ----
-        gb_disp = glass_brain_plot(
-            df=df,
-            value_col="shap_value",
-            idx_col="region_index",
-            title=None,
-            display_mode="lyrz",
-            cmap="seismic"
-        )
-        gb_png = out_dir / "shap_glass_brain.png"
-        gb_disp.savefig(str(gb_png))
-        try:
-            gb_disp.close()  # nilearn Display supports close()
-        except Exception:
-            pass
+        if not df_glass.empty:
+            gb_disp = glass_brain_plot(
+                df=df_glass,
+                value_col="shap_value",
+                idx_col="region_index",
+                title=None,
+                display_mode="lyrz",
+                cmap="seismic"
+            )
+            gb_png = out_dir / "shap_glass_brain.png"
+            gb_disp.savefig(str(gb_png))
+            try:
+                gb_disp.close()  # nilearn Display supports close()
+            except Exception:
+                pass
 
         meta_path = folder / "prediction.json"
         if not meta_path.exists():
@@ -253,50 +255,70 @@ def main():
 
         shap.plots.waterfall(expl, max_display=args.top_k, show=False)
 
+        shap_mode = meta.get("shap_model_output", "raw")
+        is_logit = shap_mode == "log_loss"
+
         threshold_prob = meta.get("threshold_used", None)
-        threshold_logit: Optional[float] = None
+        threshold_position: Optional[float] = None
         if threshold_prob is not None:
             try:
                 threshold_prob = float(threshold_prob)
-                if 0 < threshold_prob < 1:
-                    threshold_logit = float(np.log(threshold_prob / (1.0 - threshold_prob)))
+                if is_logit and 0 < threshold_prob < 1:
+                    threshold_position = float(np.log(threshold_prob / (1.0 - threshold_prob)))
+                elif not is_logit:
+                    threshold_position = threshold_prob
             except (TypeError, ValueError):
-                threshold_logit = None
+                threshold_prob = None
 
         xmin, xmax = ax.get_xlim()
-        if threshold_logit is not None:
-            ax.axvspan(xmin, threshold_logit, color="#1f77b4", alpha=0.08, zorder=-2)
-            ax.axvspan(threshold_logit, xmax, color="#d62728", alpha=0.08, zorder=-2)
-            ax.axvline(threshold_logit, color="black", linestyle="--", linewidth=1.2, zorder=-1)
+        if threshold_position is not None:
+            left = min(xmin, threshold_position)
+            right = max(xmax, threshold_position)
+            ax.axvspan(left, threshold_position, color="#1f77b4", alpha=0.08, zorder=-2)
+            ax.axvspan(threshold_position, right, color="#d62728", alpha=0.08, zorder=-2)
+            ax.axvline(threshold_position, color="black", linestyle="--", linewidth=1.2, zorder=-1)
+            ax.set_xlim(left, right)
         else:
             ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=-1)
-
-        ax.set_xlim(xmin, xmax)
+            ax.set_xlim(xmin, xmax)
 
         sum_shap = float(df_all["shap_value"].sum())
         total = expected_value + sum_shap
 
         proba_from_meta = meta.get("proba", None)
-        if proba_from_meta is not None:
-            p_annot = float(proba_from_meta)
-            p_note = "probability from model output"
+        try:
+            proba_from_meta = None if proba_from_meta is None else float(proba_from_meta)
+        except (TypeError, ValueError):
+            proba_from_meta = None
+
+        if is_logit:
+            total_prob = 1.0 / (1.0 + np.exp(-total))
+            lines = [
+                f"Base (logit) = {expected_value:.3f}",
+                f"Σ SHAP (logit) = {sum_shap:.3f}",
+                f"Total logit = {total:.3f}",
+                f"P(AD) ≈ {total_prob:.3f} (sigmoid(total))"
+            ]
+            if proba_from_meta is not None:
+                lines.append(f"Model probability = {proba_from_meta:.3f}")
         else:
-            p_annot = 1.0 / (1.0 + np.exp(-total))
-            p_note = "probability via sigmoid(total)"
+            total_prob = total
+            lines = [
+                f"Base (prob) = {expected_value:.3f}",
+                f"Σ SHAP (prob) = {sum_shap:.3f}",
+                f"Total prob = {total_prob:.3f}"
+            ]
+            if proba_from_meta is not None:
+                lines.append(f"Model probability = {proba_from_meta:.3f}")
+            else:
+                lines.append(f"P(AD) ≈ {total_prob:.3f}")
 
-        thr = threshold_prob if threshold_prob is not None else meta.get("threshold_used", None)
-        label = meta.get("predicted_label", None)
-
-        lines = [
-            f"Base = {expected_value:.3f}",
-            f"Σ SHAP(all) = {sum_shap:.3f}",
-            f"Total = {total:.3f}",
-            f"P(AD) ≈ {p_annot:.3f}  ({p_note})"
-        ]
-        if thr is not None and label is not None:
-            lines.append(f"Threshold = {float(thr):.3f} → Label = {label}")
-        elif thr is not None:
-            lines.append(f"Threshold = {float(thr):.3f}")
+        if threshold_prob is not None:
+            label = meta.get("predicted_label", None)
+            if label is not None:
+                lines.append(f"Threshold = {threshold_prob:.3f} → Label = {label}")
+            else:
+                lines.append(f"Threshold = {threshold_prob:.3f}")
 
         plt.tight_layout(rect=[0, 0, 1, 0.93])
         fig = plt.gcf()
