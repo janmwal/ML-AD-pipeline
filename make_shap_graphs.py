@@ -255,32 +255,10 @@ def main():
 
         shap.plots.waterfall(expl, max_display=args.top_k, show=False)
 
-        shap_mode = meta.get("shap_model_output", "raw")
-        is_logit = shap_mode == "log_loss"
+        def _sigmoid(x: float) -> float:
+            return 1.0 / (1.0 + np.exp(-x))
 
-        threshold_prob = meta.get("threshold_used", None)
-        threshold_position: Optional[float] = None
-        if threshold_prob is not None:
-            try:
-                threshold_prob = float(threshold_prob)
-                if is_logit and 0 < threshold_prob < 1:
-                    threshold_position = float(np.log(threshold_prob / (1.0 - threshold_prob)))
-                elif not is_logit:
-                    threshold_position = threshold_prob
-            except (TypeError, ValueError):
-                threshold_prob = None
-
-        xmin, xmax = ax.get_xlim()
-        if threshold_position is not None:
-            left = min(xmin, threshold_position)
-            right = max(xmax, threshold_position)
-            ax.axvspan(left, threshold_position, color="#1f77b4", alpha=0.08, zorder=-2)
-            ax.axvspan(threshold_position, right, color="#d62728", alpha=0.08, zorder=-2)
-            ax.axvline(threshold_position, color="black", linestyle="--", linewidth=1.2, zorder=-1)
-            ax.set_xlim(left, right)
-        else:
-            ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=-1)
-            ax.set_xlim(xmin, xmax)
+        shap_mode = meta.get("shap_model_output")
 
         sum_shap = float(df_all["shap_value"].sum())
         total = expected_value + sum_shap
@@ -291,34 +269,85 @@ def main():
         except (TypeError, ValueError):
             proba_from_meta = None
 
+        prob_from_logit = _sigmoid(total)
+
+        if shap_mode is None:
+            inferred = None
+            if proba_from_meta is not None and abs(prob_from_logit - proba_from_meta) < 1e-3:
+                inferred = "log_loss"
+            elif 0.0 <= expected_value <= 1.0 and 0.0 <= total <= 1.0:
+                inferred = "probability"
+            shap_mode = inferred or "log_loss"
+
+        is_logit = shap_mode == "log_loss"
+        if not is_logit:
+            if not 0.0 <= expected_value <= 1.0:
+                is_logit = True
+            elif proba_from_meta is not None and abs(prob_from_logit - proba_from_meta) < 1e-3:
+                is_logit = True
+            elif not 0.0 <= total <= 1.0:
+                is_logit = True
+
+        threshold_prob = meta.get("threshold_used", None)
+        threshold_position: Optional[float] = None
+        threshold_logit_display: Optional[float] = None
+        if threshold_prob is not None:
+            try:
+                threshold_prob = float(threshold_prob)
+                if is_logit and 0 < threshold_prob < 1:
+                    threshold_position = float(np.log(threshold_prob / (1.0 - threshold_prob)))
+                    threshold_logit_display = threshold_position
+                elif not is_logit:
+                    threshold_position = threshold_prob
+            except (TypeError, ValueError):
+                threshold_prob = None
+
+        xmin, xmax = ax.get_xlim()
+        if threshold_position is not None:
+            left = min(xmin, threshold_position)
+            right = max(xmax, threshold_position)
+            ax.axvspan(left, threshold_position, color="#1f77b4", alpha=0.12, zorder=0)
+            ax.axvspan(threshold_position, right, color="#d62728", alpha=0.12, zorder=0)
+            line_color = "#ff7f0e" if is_logit else "#1f77b4"
+            ax.axvline(threshold_position, color=line_color, linestyle="--", linewidth=2.0, zorder=6)
+            ax.set_xlim(left, right)
+        else:
+            ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=-1)
+            ax.set_xlim(xmin, xmax)
+
         if is_logit:
-            total_prob = 1.0 / (1.0 + np.exp(-total))
+            total_prob = _sigmoid(total)
             lines = [
                 f"Base (logit) = {expected_value:.3f}",
                 f"Σ SHAP (logit) = {sum_shap:.3f}",
-                f"Total logit = {total:.3f}",
-                f"P(AD) ≈ {total_prob:.3f} (sigmoid(total))"
+                f"Total (logit) = {total:.3f}",
+                f"P(AD) ≈ {total_prob:.3f}"
             ]
             if proba_from_meta is not None:
-                lines.append(f"Model probability = {proba_from_meta:.3f}")
+                #lines.append(f"Model probability = {proba_from_meta:.3f}")
+                pass
         else:
             total_prob = total
             lines = [
                 f"Base (prob) = {expected_value:.3f}",
                 f"Σ SHAP (prob) = {sum_shap:.3f}",
-                f"Total prob = {total_prob:.3f}"
+                f"Total (prob) = {total_prob:.3f}"
             ]
             if proba_from_meta is not None:
-                lines.append(f"Model probability = {proba_from_meta:.3f}")
+                #lines.append(f"Model probability = {proba_from_meta:.3f}")
+                pass
             else:
                 lines.append(f"P(AD) ≈ {total_prob:.3f}")
 
         if threshold_prob is not None:
             label = meta.get("predicted_label", None)
-            if label is not None:
-                lines.append(f"Threshold = {threshold_prob:.3f} → Label = {label}")
+            if threshold_logit_display is not None:
+                thresh_line = f"Threshold = {threshold_prob:.3f}"
             else:
-                lines.append(f"Threshold = {threshold_prob:.3f}")
+                thresh_line = f"Threshold = {threshold_prob:.3f}"
+            if label is not None:
+                thresh_line += f" → Label = {label}"
+            lines.append(thresh_line)
 
         plt.tight_layout(rect=[0, 0, 1, 0.93])
         fig = plt.gcf()
