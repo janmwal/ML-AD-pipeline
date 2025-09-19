@@ -3,9 +3,11 @@
   "threshold": false,
   "study_name": "adclf_tiv_unnorm_no_vessel_agd_astr_cm_lgbm_unthrs",
   "storage": "sqlite:///optuna_ml_ad.db",
-  "best_value": 0.8688145446397595,
-  "best_trial": 37,
+  "start_time": "2025-09-19T01:56:24.705080",
+  "end_time": "2025-09-19T02:06:32.383394",
+  "duration_seconds": 607.678314,
   "metric": "roc_auc",
+  "best_value": 0.8688145446397595,
   "metrics": {
     "roc_auc": 0.8896343996676361,
     "f1": 0.7448275862068966,
@@ -14,22 +16,23 @@
     "recall": 0.6982758620689655
   },
   "n_trials": 100,
-  "cv_splits": 5,
-  "target_mapping": {
-    "CN": 0,
-    "AD": 1
-  },
-  "dataset_rows": 2584,
-  "dataset_cols": 152,
-  "dataset_hash": {
-    "X_train": "9342f80e9b3ab7f242e83e8297afac0c",
-    "y_train": "b408a4b58df1f949442586ad8993e896",
-    "X_test": "1b126d86427ed602b2a14240596ccd9d",
-    "y_test": "8a0ad03f4c1e4e906352312eb06e1db5"
+  "best_params": {
+    "learning_rate": 0.13780309488934958,
+    "num_leaves": 223,
+    "max_depth": 8,
+    "min_child_samples": 84,
+    "subsample": 0.8682716908904448,
+    "colsample_bytree": 0.7667695717969344,
+    "reg_alpha": 2.0064490244766114e-07,
+    "reg_lambda": 1.5151435222794752e-06,
+    "min_split_gain": 0.3194912939757994,
+    "n_estimators": 79,
+    "class_weight": null
   },
   "artifacts": {
     "model": "models/lgbm/unthrs/model.joblib",
     "best_params": "models/lgbm/unthrs/best_params.json",
+    "metadata": "models/lgbm/unthrs/metadata.json",
     "trials": "models/lgbm/unthrs/trials.csv",
     "splits": {
       "X_train": "models/lgbm/unthrs/X_train.csv",

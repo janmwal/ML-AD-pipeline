@@ -45,7 +45,7 @@ DATA_SPLIT_SEED = 422
 DEFAULT_TEST_SIZE = 0.2
 DEFAULT_CV_SPLITS = 5
 METRIC_NAME = "roc_auc"
-FEATURES_TO_DROP = ["Right vessel", "Left vessel"]
+FEATURES_TO_DROP = ["Right vessel", "Left vessel", "Left agd_astr", "Right agd_astr", "Left agd_centromedian", "Right agd_centromedian"]
 
 
 @dataclass
