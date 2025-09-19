@@ -1,30 +1,30 @@
 {
   "model": "lgbm",
   "threshold": false,
-  "study_name": "adclf_tiv_unnorm_lgbm_unthrs",
+  "study_name": "adclf_tiv_unnorm_no_vessel_lgbm_unthrs",
   "storage": "sqlite:///optuna_ml_ad.db",
-  "best_value": 0.9106233421875525,
-  "best_trial": 111,
+  "best_value": 0.909947113645478,
+  "best_trial": 41,
   "metric": "roc_auc",
   "metrics": {
-    "roc_auc": 0.9237017033651849,
-    "f1": 0.8070175438596491,
-    "accuracy": 0.8639876352395672,
-    "precision": 0.8214285714285714,
-    "recall": 0.7931034482758621
+    "roc_auc": 0.9276589115081013,
+    "f1": 0.7881548974943052,
+    "accuracy": 0.8562596599690881,
+    "precision": 0.8357487922705314,
+    "recall": 0.7456896551724138
   },
-  "n_trials": 200,
+  "n_trials": 100,
   "cv_splits": 5,
   "target_mapping": {
     "CN": 0,
     "AD": 1
   },
   "dataset_rows": 2584,
-  "dataset_cols": 158,
+  "dataset_cols": 156,
   "dataset_hash": {
-    "X_train": "2f058ee7c17cb78c6c41b9e744360601",
+    "X_train": "57d0d517a414de69b9e65358069dcdfc",
     "y_train": "b408a4b58df1f949442586ad8993e896",
-    "X_test": "b973ae732f2f17fe943742f245f8ce6c",
+    "X_test": "d0fa1296b1870ed13fc020d9c4739190",
     "y_test": "8a0ad03f4c1e4e906352312eb06e1db5"
   },
   "artifacts": {
