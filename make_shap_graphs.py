@@ -40,13 +40,13 @@ def _load_space_to_index_map() -> Dict[str, int]:
         mid_full = row.get("midline_full_name")
 
         if isinstance(left_full, str):
-            nospace = left_full.split("_")[0]
+            nospace = left_full.rsplit("_", 1)[0]
             _record(nospace, row.get("left_id"))
         if isinstance(right_full, str):
-            nospace = right_full.split("_")[0]
+            nospace = right_full.rsplit("_", 1)[0]
             _record(nospace, row.get("right_id"))
         if isinstance(mid_full, str):
-            nospace = mid_full.split("_")[0]
+            nospace = mid_full.rsplit("_", 1)[0]
             _record(nospace, row.get("midline_id"))
 
     return mapping
@@ -193,7 +193,7 @@ def main():
             missing_regions = df.loc[df["region_index"].isna(), "region_name"].tolist()
             if missing_regions:
                 print(
-                    f"[WARN] Skipping regions without atlas indices in {folder}: {missing_regions[:5]}"
+                    f"[WARN] Skipping regions without atlas indices in {folder}: {missing_regions}"
                 )
 
         df_glass = df.dropna(subset=["region_index"]).copy()

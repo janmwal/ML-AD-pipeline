@@ -83,3 +83,6 @@ Th_ventroanterior,226.0,227.0,,Subcortical Structures,,LeftTh_ventroanterior_226
 Th_ventrolateral,228.0,229.0,,Subcortical Structures,,LeftTh_ventrolateral_228,RightTh_ventrolateral_229,,Th_vl,#e377c2,#4ad70b
 Th_ventroposterior,230.0,231.0,,Subcortical Structures,,LeftTh_ventroposterior_230,RightTh_ventroposterior_231,,Th_vp,#e377c2,#cfdf08
 TrIFGTriangularPartOfTheInferiorFrontalGyrus,205.0,204.0,,Frontal Lobe,Language,LeftTrIFGTriangularPartOfTheInferiorFrontalGyrus_205,RightTrIFGTriangularPartOfTheInferiorFrontalGyrus_204,,TrIFG,#bcbd22,#90c4fe
+Vessel,64,63,,Other,,LeftVessel,RightVessel,,VSL
+Agd_centromedian,236,237,,Limbic Cortex,,LeftAgd_centromedian_236,RightAgd_centromedian_237,,Agd_cm
+Agd_astr,234,235,,Limbic Cortex,,LeftAgd_astr_234,RightAgd_astr_235,,Agd_as
