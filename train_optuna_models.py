@@ -45,6 +45,7 @@ DATA_SPLIT_SEED = 422
 DEFAULT_TEST_SIZE = 0.2
 DEFAULT_CV_SPLITS = 5
 METRIC_NAME = "roc_auc"
+FEATURES_TO_DROP = ["Right vessel", "Left vessel"]
 
 
 @dataclass
@@ -194,6 +195,8 @@ def prepare_dataset(dfs: Any, threshold: bool) -> Tuple[pd.DataFrame, pd.Series,
             f"Dropping {dropped} rows with unsupported labels for target '{TARGET_COL}': {drop_summary}"
         )
     X = df.loc[mask].drop(columns=[TARGET_COL])
+    if FEATURES_TO_DROP:
+        X = X.drop(columns=FEATURES_TO_DROP, errors="ignore")
     y_filtered = y_raw.loc[mask]
     y_encoded = y_filtered.map(TARGET_MAPPING).astype("int8")
     return X, y_encoded, y_filtered, TARGET_MAPPING
@@ -478,8 +481,8 @@ def main() -> None:
     combinations = [
         ("lgbm", True),
         ("lgbm", False),
-        ("extratrees", True),
-        ("extratrees", False),
+        #("extratrees", True),
+        #("extratrees", False),
     ]
 
     results = []

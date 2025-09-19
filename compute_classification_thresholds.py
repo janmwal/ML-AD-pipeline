@@ -19,7 +19,7 @@ from sklearn.metrics import (
 )
 
 CLASS_MAPPING = {"CN": 0, "AD": 1}
-MODELS = ("lgbm", "extratrees")
+MODELS = ("lgbm",)
 GM_THRESHOLDS = ("unthrs", "thrs")
 STRATEGIES = ("youden", "sensitivity", "f1")
 TARGET_SENSITIVITY = 0.90
