@@ -437,8 +437,10 @@ def run_single_prediction(
 
     X_new.to_csv(out_dir / "X_new.csv", index=False)
 
+
     proba_arr = pipeline.predict_proba(X_new)
-    proba = float(np.asarray(proba_arr)[0, pos_idx])
+    proba_row = np.asarray(proba_arr)[0]
+    proba = float(proba_row[pos_idx])
     label = label_mapping[int(proba >= threshold)]
 
     X_tr, feat_names = _transform_to_model_input_and_names(pipeline, X_new)
@@ -479,6 +481,19 @@ def run_single_prediction(
         shap_exp = _coerce_expected_value(exp, pos_idx)
     except Exception:
         shap_exp = None
+
+    # --- SHAP sanity check and extra variables ---
+    def _sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    base_logit = float(shap_exp) if shap_exp is not None else 0.0
+    base_proba = float(_sigmoid(base_logit))
+    delta_logit = float(shap_transformed.iloc[0].sum())
+    pred_logit_from_shap = base_logit + delta_logit
+    pred_proba_from_shap = float(_sigmoid(pred_logit_from_shap))
+    pred_proba_pipeline = float(proba_row[pos_idx])
+    recon_error = abs(pred_proba_from_shap - pred_proba_pipeline)
+    shap_space = "raw_logit"
 
     if {'name', 'index'}.issubset(source_df.columns):
         region_map = (
@@ -526,14 +541,21 @@ def run_single_prediction(
         "predicted_label": label,
         "threshold_used": threshold,
         "threshold_target": threshold_target,
-        "shap_expected_value": shap_exp,
         "shap_model_output": shap_model_output,
+        "shap_expected_value_logit": base_logit,
+        "shap_expected_value_proba": base_proba,
+        "shap_sum_logit": delta_logit,
+        "pred_proba_from_shap": pred_proba_from_shap,
+        "pred_proba_pipeline": pred_proba_pipeline,
+        "prob_reconstruction_error": recon_error,
+        "shap_space": shap_space,
         "n_transformed_features": int(shap_transformed.shape[1]),
         "n_original_features": int(shap_original.shape[1]),
         "n_missing_expected_raw_cols": int(len(missing_cols)),
         "n_extra_csv_cols_ignored": int(len(extra_cols)),
         "missing_expected_raw_cols_sample": list(missing_cols)[:10],
         "extra_csv_cols_ignored_sample": list(extra_cols)[:10],
+
     }
     with open(out_dir / "prediction.json", "w") as f:
         json.dump(summary, f, indent=2)

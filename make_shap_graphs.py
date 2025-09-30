@@ -232,7 +232,7 @@ def main():
         with open(meta_path, "r") as f:
             meta = json.load(f)
 
-        expected_value = meta.get("shap_expected_value")
+        expected_value = meta.get("shap_expected_value_logit")
         if expected_value is None:
             raise ValueError("prediction.json missing expected_value; rerun classification script.")
 
